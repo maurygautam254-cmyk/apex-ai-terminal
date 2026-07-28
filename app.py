@@ -5,13 +5,13 @@ import plotly.graph_objects as go
 # --- 1. PAGE CONFIGURATION ---
 st.set_page_config(page_title="APEX AI: The World, Live", page_icon="🌍", layout="wide")
 
-# --- 2. ADVANCED LIQUID GLASS CSS ---
+# --- 2. ADVANCED LIQUID GLASS CSS (Fixed Text Readability) ---
 st.markdown("""
     <style>
-    /* 1. THE MAGIC BACKGROUND (Gives the glass something to blur) */
+    /* 1. THE MAGIC BACKGROUND WITH DARK TINT */
     .stApp {
-        /* Using a stunning dark cinematic background image */
-        background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
+        /* Yahan humne linear-gradient (Dark Overlay) add kiya hai */
+        background: linear-gradient(to bottom, rgba(5, 10, 20, 0.85) 0%, rgba(5, 10, 20, 0.2) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
         background-size: cover;
         color: #ffffff;
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
@@ -20,23 +20,23 @@ st.markdown("""
     /* Hide the top header line of Streamlit */
     header {visibility: hidden;}
     
-    /* 2. TYPOGRAPHY (IdeaPulse Vibe) */
-    h1 { font-weight: 900; font-size: 4rem; letter-spacing: -2px; margin-bottom: 0; text-shadow: 0 4px 20px rgba(0,0,0,0.8);}
-    .neon-text { color: #00e5ff; text-shadow: 0 0 20px rgba(0, 229, 255, 0.8); }
-    .sub-text { color: #e2e8f0; font-size: 1.2rem; margin-bottom: 30px; font-weight: 300; text-shadow: 0 2px 10px rgba(0,0,0,0.8);}
+    /* 2. TYPOGRAPHY (Enhanced Shadows for Readability) */
+    h1 { font-weight: 900; font-size: 4rem; letter-spacing: -2px; margin-bottom: 0; text-shadow: 2px 4px 15px rgba(0,0,0,1);}
+    .neon-text { color: #00e5ff; text-shadow: 0 0 20px rgba(0, 229, 255, 0.9), 2px 2px 10px rgba(0,0,0,1); }
+    .sub-text { color: #e2e8f0; font-size: 1.2rem; margin-bottom: 30px; font-weight: 500; text-shadow: 1px 2px 10px rgba(0,0,0,1);}
 
-    /* 3. PURE LIQUID GLASS CARDS (The exact UI you asked for) */
+    /* 3. PURE LIQUID GLASS CARDS */
     .glass-card {
-        background: rgba(15, 23, 42, 0.4); /* Very transparent deep blue */
-        backdrop-filter: blur(25px); /* HEAVY BLUR FOR LIQUID GLASS */
+        background: rgba(15, 23, 42, 0.4); 
+        backdrop-filter: blur(25px); 
         -webkit-backdrop-filter: blur(25px);
-        border: 1px solid rgba(255, 255, 255, 0.15); /* Light reflection edge */
-        border-top: 1px solid rgba(255, 255, 255, 0.4); /* Strong top reflection */
+        border: 1px solid rgba(255, 255, 255, 0.15); 
+        border-top: 1px solid rgba(255, 255, 255, 0.4); 
         border-left: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 24px; /* Ultra rounded corners */
+        border-radius: 24px; 
         padding: 30px;
         margin-bottom: 25px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05); /* 3D depth */
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05); 
         transition: transform 0.4s ease, box-shadow 0.4s ease;
     }
     
@@ -76,7 +76,7 @@ fig = go.Figure(data=go.Scattergeo(
 fig.update_layout(
     geo = dict(
         projection_type = 'orthographic',
-        showland = True, landcolor = "rgba(10, 25, 47, 0.7)", # Transparent dark land
+        showland = True, landcolor = "rgba(10, 25, 47, 0.7)", 
         showocean = True, oceancolor = "rgba(0,0,0,0)",
         showcountries=True, countrycolor="rgba(0, 229, 255, 0.6)",
         showcoastlines=True, coastlinecolor="rgba(0, 229, 255, 0.8)",
