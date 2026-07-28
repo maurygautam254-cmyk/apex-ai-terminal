@@ -1,92 +1,76 @@
 import streamlit as st
 import pandas as pd
-import pydeck as pdk
+import plotly.graph_objects as go
 
 # --- 1. PAGE CONFIGURATION ---
 st.set_page_config(page_title="APEX AI: The World, Live", page_icon="🌍", layout="wide")
 
-# --- 2. ADVANCED CSS: GLOWING BACKGROUND & REAL GLASS UI ---
+# --- 2. HACKER/CYBERPUNK CSS (Fixed Glass UI) ---
 st.markdown("""
     <style>
-    /* Glowing Cyberpunk Background */
+    /* Force completely dark background */
     .stApp {
-        background-color: #050508;
-        /* Creating glowing neon orbs in the background to make the glass pop */
-        background-image: 
-            radial-gradient(circle at 15% 50%, rgba(0, 229, 255, 0.15), transparent 25%),
-            radial-gradient(circle at 85% 30%, rgba(255, 51, 51, 0.12), transparent 25%);
+        background: radial-gradient(circle at 50% 0%, #111a24 0%, #050508 100%);
         color: #ffffff;
-        font-family: 'Helvetica Neue', sans-serif;
     }
     
-    /* IdeaPulse Style Typography */
+    /* Typography */
     h1 { font-weight: 900; font-size: 3.5rem; letter-spacing: -1px; margin-bottom: 0;}
-    .neon-text { color: #00e5ff; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
-    .sub-text { color: #8892b0; font-size: 1.1rem; margin-bottom: 25px; }
+    .neon-text { color: #00e5ff; text-shadow: 0 0 15px rgba(0, 229, 255, 0.6); }
+    .sub-text { color: #8892b0; font-size: 1.1rem; margin-bottom: 10px; }
 
     /* REAL LIQUID GLASS UI CARDS */
     .glass-card {
-        background: rgba(20, 20, 30, 0.4); /* Slightly lighter base for contrast */
-        backdrop-filter: blur(20px); /* Heavy blur */
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(0, 229, 255, 0.3); /* Cyan glowing border */
-        border-top: 1px solid rgba(255, 255, 255, 0.2); /* Light reflection on top edge */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
         border-left: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px; 
+        border-radius: 15px; 
         padding: 25px;
-        margin-bottom: 20px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); /* Deep shadow */
-        transition: all 0.3s ease;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
     }
     
-    .glass-card:hover {
-        transform: translateY(-5px);
-        border: 1px solid rgba(0, 229, 255, 0.6);
-        box-shadow: 0 12px 40px 0 rgba(0, 229, 255, 0.2);
-    }
-
     /* Tags */
-    .tag-live { background: rgba(0, 229, 255, 0.15); color: #00e5ff; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.4); letter-spacing: 1px;}
-    .tag-alert { background: rgba(255, 51, 51, 0.15); color: #ff3333; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; border: 1px solid rgba(255, 51, 51, 0.4); letter-spacing: 1px; margin-left: 10px;}
+    .tag-live { background: rgba(0, 229, 255, 0.15); color: #00e5ff; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: 900; border: 1px solid #00e5ff; letter-spacing: 1px;}
+    .tag-alert { background: rgba(255, 51, 51, 0.15); color: #ff3333; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: 900; border: 1px solid #ff3333; letter-spacing: 1px; margin-left: 10px;}
     </style>
 """, unsafe_allow_html=True)
 
 # --- 3. HEADER ---
 st.markdown("<h1>The World, <span class='neon-text'>Live.</span></h1>", unsafe_allow_html=True)
-st.markdown("<div class='sub-text'>Where AI & tech-policy stories are breaking. Tap a city.</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-text'>Where AI & tech-policy stories are breaking. Spin the globe.</div>", unsafe_allow_html=True)
 
-# --- 4. THE 3D GLOBE (FIXED MAP STYLE) ---
-data = pd.DataFrame([
-    {"city": "New Delhi", "lat": 28.6139, "lon": 77.2090, "color": [0, 229, 255]}, 
-    {"city": "Washington", "lat": 38.9072, "lon": -77.0369, "color": [255, 51, 51]},
-    {"city": "Moscow", "lat": 55.7558, "lon": 37.6173, "color": [255, 51, 51]},
-    {"city": "Beijing", "lat": 39.9042, "lon": 116.4074, "color": [0, 229, 255]}
+# --- 4. THE INTERACTIVE 3D GLOBE (PLOTLY) ---
+df = pd.DataFrame([
+    {"city": "New Delhi", "lat": 28.6139, "lon": 77.2090, "color": "#00e5ff", "size": 12}, 
+    {"city": "Washington", "lat": 38.9072, "lon": -77.0369, "color": "#ff3333", "size": 14},
+    {"city": "Moscow", "lat": 55.7558, "lon": 37.6173, "color": "#ff3333", "size": 14},
+    {"city": "Beijing", "lat": 39.9042, "lon": 116.4074, "color": "#00e5ff", "size": 12}
 ])
 
-# Using 'dark' which defaults to CartoDB (Free, no API key needed)
-st.pydeck_chart(pdk.Deck(
-    map_style='dark', 
-    initial_view_state=pdk.ViewState(
-        latitude=20.0,
-        longitude=40.0,
-        zoom=1.5,
-        pitch=50, 
-    ),
-    layers=[
-        pdk.Layer(
-            'ScatterplotLayer',
-            data=data,
-            get_position='[lon, lat]',
-            get_color='color',
-            get_radius=600000, 
-            pickable=True,
-            filled=True,
-            opacity=0.9
-        ),
-    ],
+fig = go.Figure(data=go.Scattergeo(
+    lon = df['lon'], lat = df['lat'], text = df['city'],
+    mode = 'markers',
+    marker = dict(size = df['size'], color = df['color'], line_color='white', line_width=1, opacity=0.9)
 ))
 
-st.markdown("<br>", unsafe_allow_html=True)
+fig.update_layout(
+    geo = dict(
+        projection_type = 'orthographic', # THIS MAKES IT A 3D GLOBE!
+        showland = True, landcolor = "rgb(17, 24, 32)", # Dark grey land
+        showocean = True, oceancolor = "rgba(0,0,0,0)", # Transparent ocean
+        showcountries=True, countrycolor="rgb(40, 50, 60)",
+        bgcolor="rgba(0,0,0,0)"
+    ),
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    margin=dict(l=0, r=0, t=0, b=0),
+    height=450
+)
+
+st.plotly_chart(fig, use_container_width=True)
 
 # --- 5. LIQUID GLASS DATA FEED ---
 col1, col2 = st.columns(2)
@@ -96,7 +80,7 @@ with col1:
     <div class="glass-card">
         <span class="tag-live">LIVE NODE</span><span class="tag-alert">HOT SIGNAL</span><br><br>
         <h3 style="margin-top: 5px; margin-bottom: 10px;">Global Semiconductor Policy Shift</h3>
-        <p style="color: #cccccc; font-size: 15px; line-height: 1.5;">Autonomous scan detected new export restrictions from US to Asian markets. Expected disruption in supply chain within 72 hours.</p>
+        <p style="color: #cccccc; font-size: 15px;">Autonomous scan detected new export restrictions from US to Asian markets. Expected disruption in supply chain within 72 hours.</p>
         <b class="neon-text">⚡ APEX Verification: True</b>
     </div>
     """, unsafe_allow_html=True)
@@ -106,7 +90,7 @@ with col2:
     <div class="glass-card">
         <span class="tag-live">AI FORENSIC</span><br><br>
         <h3 style="margin-top: 5px; margin-bottom: 10px;">Crude Oil vs. Pump Price Gap</h3>
-        <p style="color: #cccccc; font-size: 15px; line-height: 1.5;">Brent crude down by 14%, yet domestic retail fuel remains unchanged. Fact-checking the fiscal deficit narrative pushed by national media.</p>
+        <p style="color: #cccccc; font-size: 15px;">Brent crude down by 14%, yet domestic retail fuel remains unchanged. Fact-checking the fiscal deficit narrative.</p>
         <b class="neon-text">⚡ APEX Verification: Analysing...</b>
     </div>
     """, unsafe_allow_html=True)
