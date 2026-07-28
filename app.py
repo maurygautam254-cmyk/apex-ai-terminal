@@ -5,12 +5,12 @@ import plotly.graph_objects as go
 # --- 1. PAGE CONFIGURATION ---
 st.set_page_config(page_title="APEX AI: The World, Live", page_icon="🌍", layout="wide")
 
-# --- 2. HACKER/CYBERPUNK CSS (Fixed Glass UI) ---
+# --- 2. HACKER/CYBERPUNK CSS ---
 st.markdown("""
     <style>
     /* Force completely dark background */
     .stApp {
-        background: radial-gradient(circle at 50% 0%, #111a24 0%, #050508 100%);
+        background: #020617; /* Very deep dark blue/black */
         color: #ffffff;
     }
     
@@ -42,7 +42,7 @@ st.markdown("""
 st.markdown("<h1>The World, <span class='neon-text'>Live.</span></h1>", unsafe_allow_html=True)
 st.markdown("<div class='sub-text'>Where AI & tech-policy stories are breaking. Spin the globe.</div>", unsafe_allow_html=True)
 
-# --- 4. THE INTERACTIVE 3D GLOBE (PLOTLY) ---
+# --- 4. THE HOLOGRAPHIC 3D GLOBE (PLOTLY) ---
 df = pd.DataFrame([
     {"city": "New Delhi", "lat": 28.6139, "lon": 77.2090, "color": "#00e5ff", "size": 12}, 
     {"city": "Washington", "lat": 38.9072, "lon": -77.0369, "color": "#ff3333", "size": 14},
@@ -53,21 +53,31 @@ df = pd.DataFrame([
 fig = go.Figure(data=go.Scattergeo(
     lon = df['lon'], lat = df['lat'], text = df['city'],
     mode = 'markers',
-    marker = dict(size = df['size'], color = df['color'], line_color='white', line_width=1, opacity=0.9)
+    marker = dict(size = df['size'], color = df['color'], line_color='white', line_width=2, opacity=1)
 ))
 
+# MAGIC HAPPENS HERE: Making it look like a Cyberpunk Hologram
 fig.update_layout(
     geo = dict(
-        projection_type = 'orthographic', # THIS MAKES IT A 3D GLOBE!
-        showland = True, landcolor = "rgb(17, 24, 32)", # Dark grey land
-        showocean = True, oceancolor = "rgba(0,0,0,0)", # Transparent ocean
-        showcountries=True, countrycolor="rgb(40, 50, 60)",
+        projection_type = 'orthographic',
+        showland = True, 
+        landcolor = "#0a192f",          # Deep Tech Blue
+        showocean = True, 
+        oceancolor = "rgba(0,0,0,0)",   # Transparent ocean
+        showcountries=True, 
+        countrycolor="#00e5ff",         # Cyan borders
+        countrywidth=1,
+        showcoastlines=True,
+        coastlinecolor="#00e5ff",       # Cyan coastlines
+        coastlinewidth=1,
+        lonaxis = dict(showgrid=True, gridcolor='rgba(0, 229, 255, 0.15)', gridwidth=0.5), # Hologram grid
+        lataxis = dict(showgrid=True, gridcolor='rgba(0, 229, 255, 0.15)', gridwidth=0.5),
         bgcolor="rgba(0,0,0,0)"
     ),
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     margin=dict(l=0, r=0, t=0, b=0),
-    height=450
+    height=480
 )
 
 st.plotly_chart(fig, use_container_width=True)
