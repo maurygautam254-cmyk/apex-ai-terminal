@@ -5,14 +5,13 @@ import plotly.graph_objects as go
 # --- 1. PAGE CONFIGURATION ---
 st.set_page_config(page_title="APEX AI: The World, Live", page_icon="🌍", layout="wide")
 
-# --- 2. ADVANCED LIQUID GLASS CSS (Fixed Text Readability) ---
+# --- 2. DARK EXECUTIVE CYBERPUNK CSS ---
 st.markdown("""
     <style>
-    /* 1. THE MAGIC BACKGROUND WITH DARK TINT */
+    /* 1. PURE DARK CYBERPUNK BACKGROUND */
     .stApp {
-        /* Yahan humne linear-gradient (Dark Overlay) add kiya hai */
-        background: linear-gradient(to bottom, rgba(5, 10, 20, 0.85) 0%, rgba(5, 10, 20, 0.2) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
-        background-size: cover;
+        /* Ekdum deep dark blue se pure black ka gradient */
+        background: radial-gradient(circle at center, #0a1931 0%, #020617 100%);
         color: #ffffff;
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
     }
@@ -20,38 +19,37 @@ st.markdown("""
     /* Hide the top header line of Streamlit */
     header {visibility: hidden;}
     
-    /* 2. TYPOGRAPHY (Enhanced Shadows for Readability) */
-    h1 { font-weight: 900; font-size: 4rem; letter-spacing: -2px; margin-bottom: 0; text-shadow: 2px 4px 15px rgba(0,0,0,1);}
-    .neon-text { color: #00e5ff; text-shadow: 0 0 20px rgba(0, 229, 255, 0.9), 2px 2px 10px rgba(0,0,0,1); }
-    .sub-text { color: #e2e8f0; font-size: 1.2rem; margin-bottom: 30px; font-weight: 500; text-shadow: 1px 2px 10px rgba(0,0,0,1);}
+    /* 2. TYPOGRAPHY */
+    h1 { font-weight: 900; font-size: 4rem; letter-spacing: -2px; margin-bottom: 0;}
+    .neon-text { color: #00e5ff; text-shadow: 0 0 15px rgba(0, 229, 255, 0.5); }
+    .sub-text { color: #8892b0; font-size: 1.2rem; margin-bottom: 30px; font-weight: 400;}
 
-    /* 3. PURE LIQUID GLASS CARDS */
+    /* 3. SLEEK DARK GLASS CARDS */
     .glass-card {
-        background: rgba(15, 23, 42, 0.4); 
-        backdrop-filter: blur(25px); 
-        -webkit-backdrop-filter: blur(25px);
-        border: 1px solid rgba(255, 255, 255, 0.15); 
-        border-top: 1px solid rgba(255, 255, 255, 0.4); 
-        border-left: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 24px; 
+        background: rgba(16, 24, 40, 0.6); /* Deep dark semi-transparent blue */
+        backdrop-filter: blur(12px); 
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 229, 255, 0.15); /* Subtle cyan border */
+        border-top: 1px solid rgba(0, 229, 255, 0.3); /* Top highlight */
+        border-radius: 20px; 
         padding: 30px;
         margin-bottom: 25px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05); 
-        transition: transform 0.4s ease, box-shadow 0.4s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8); /* Deep shadow */
+        transition: transform 0.3s ease, border 0.3s ease;
     }
     
     .glass-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 229, 255, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
         border: 1px solid rgba(0, 229, 255, 0.5);
+        box-shadow: 0 15px 40px rgba(0, 229, 255, 0.15);
     }
 
     /* Tags */
-    .tag-live { background: rgba(0, 229, 255, 0.2); color: #00e5ff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.5); letter-spacing: 1px;}
-    .tag-alert { background: rgba(255, 51, 51, 0.2); color: #ff3333; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255, 51, 51, 0.5); letter-spacing: 1px; margin-left: 10px;}
+    .tag-live { background: rgba(0, 229, 255, 0.1); color: #00e5ff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.4); letter-spacing: 1px;}
+    .tag-alert { background: rgba(255, 51, 51, 0.1); color: #ff3333; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255, 51, 51, 0.4); letter-spacing: 1px; margin-left: 10px;}
     
     .card-title { font-size: 1.4rem; font-weight: 700; margin-top: 15px; margin-bottom: 10px; color: #ffffff;}
-    .card-desc { color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;}
+    .card-desc { color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -76,7 +74,7 @@ fig = go.Figure(data=go.Scattergeo(
 fig.update_layout(
     geo = dict(
         projection_type = 'orthographic',
-        showland = True, landcolor = "rgba(10, 25, 47, 0.7)", 
+        showland = True, landcolor = "#0a192f", # Tech Blue Land
         showocean = True, oceancolor = "rgba(0,0,0,0)",
         showcountries=True, countrycolor="rgba(0, 229, 255, 0.6)",
         showcoastlines=True, coastlinecolor="rgba(0, 229, 255, 0.8)",
@@ -92,7 +90,7 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-# --- 5. THE REAL LIQUID GLASS CARDS ---
+# --- 5. THE DATA CARDS ---
 col1, col2 = st.columns(2)
 
 with col1:
