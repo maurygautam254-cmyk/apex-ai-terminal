@@ -12,7 +12,7 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent. Paste any headline, fact, or data from the right feed, and I will provide a deep-dive analysis."}
     ]
 
-# --- 2. TERMINAL CSS (Sidebar Fix Included) ---
+# --- 2. TERMINAL CSS (Dark Smoked Glass + Glowing Sidebar Button) ---
 st.markdown("""
     <style>
     /* 1. CINEMATIC BACKGROUND */
@@ -22,9 +22,34 @@ st.markdown("""
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
     }
     
-    /* THE FIX: Keep sidebar arrow visible, but hide Streamlit's default right-side menu */
-    header {background-color: transparent !important;}
-    [data-testid="stToolbar"] {visibility: hidden !important;}
+    /* 🚨 ULTIMATE SIDEBAR FIX: GLOWING BUTTON 🚨 */
+    header { visibility: visible !important; background: transparent !important; }
+    [data-testid="stToolbar"] { visibility: hidden !important; } /* Hides right side menu */
+    
+    /* Make the open button glowing, cyan, and impossible to miss */
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        background-color: rgba(10, 15, 30, 0.9) !important;
+        border: 1px solid #00e5ff !important;
+        border-radius: 8px !important;
+        margin-top: 15px !important;
+        margin-left: 15px !important;
+        padding: 5px !important;
+        z-index: 999999 !important;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.6) !important;
+        transition: 0.3s ease !important;
+    }
+    [data-testid="collapsedControl"]:hover {
+        box-shadow: 0 0 25px rgba(0, 229, 255, 1) !important;
+        transform: scale(1.1) !important;
+    }
+    [data-testid="collapsedControl"] svg {
+        fill: #00e5ff !important; 
+        color: #00e5ff !important;
+        width: 24px !important;
+        height: 24px !important;
+    }
     
     /* SIDEBAR CUSTOMIZATION (Hacker/Dark Vibe) */
     [data-testid="stSidebar"] {
@@ -146,8 +171,8 @@ with col_globe:
     fig.update_layout(
         geo = dict(
             projection_type = 'orthographic',
-            showland = True, landcolor = "#1e293b",     # Solid Land
-            showocean = True, oceancolor = "#064273",    # Deep Blue Ocean Water
+            showland = True, landcolor = "#1e293b",     
+            showocean = True, oceancolor = "#064273",    
             showcountries=True, countrycolor="rgba(255,255,255,0.2)",
             showcoastlines=True, coastlinecolor="rgba(255,255,255,0.4)",
             bgcolor="rgba(0,0,0,0)"
