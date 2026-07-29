@@ -5,12 +5,11 @@ import plotly.graph_objects as go
 # --- 1. PAGE CONFIGURATION ---
 st.set_page_config(page_title="APEX AI: The World, Live", page_icon="🌍", layout="wide")
 
-# --- 2. EXACT LIQUID GLASS CSS (COLORFUL ABSTRACT BACKGROUND) ---
+# --- 2. ADVANCED CSS (DARK SMOKED GLASS FIX) ---
 st.markdown("""
     <style>
     /* 1. THE COLORFUL ABSTRACT BACKGROUND */
     .stApp {
-        /* Wahi purana colorful tech background jo tujhe pasand aaya tha + Halka dark tint text readability ke liye */
         background: linear-gradient(to bottom, rgba(5, 10, 20, 0.4) 0%, rgba(5, 10, 20, 0.1) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
         background-size: cover;
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
@@ -18,36 +17,37 @@ st.markdown("""
     
     header {visibility: hidden;}
     
-    /* 2. TYPOGRAPHY (Shadows for readability) */
+    /* 2. TYPOGRAPHY */
     h1 { font-weight: 900; font-size: 4rem; letter-spacing: -2px; margin-bottom: 0; color: #ffffff; text-shadow: 0px 4px 15px rgba(0,0,0,0.8);}
     .neon-text { color: #00e5ff; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); }
     .sub-text { color: #f8fafc; font-size: 1.2rem; margin-bottom: 30px; font-weight: 500; text-shadow: 0px 2px 10px rgba(0,0,0,0.8);}
 
-    /* 3. PURE LIQUID GLASS CARDS */
+    /* 3. DARK SMOKED GLASS CARDS (THE FIX) */
     .glass-card {
-        background: rgba(255, 255, 255, 0.05); /* Very light white tint for frosted glass */
-        backdrop-filter: blur(25px); /* Heavy blur */
-        -webkit-backdrop-filter: blur(25px);
-        border: 1px solid rgba(255, 255, 255, 0.3); /* Glowing edge */
+        background: rgba(10, 15, 30, 0.75); /* Dark Tint for extreme readability */
+        backdrop-filter: blur(20px); 
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15); /* Light glowing edge */
+        border-top: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 24px; 
         padding: 30px;
         margin-bottom: 25px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.05); 
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6); /* Deep shadow */
         transition: transform 0.3s ease;
-        color: #ffffff;
     }
     
     .glass-card:hover {
         transform: translateY(-5px);
-        border: 1px solid rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(0, 229, 255, 0.5); /* Cyan glow on hover */
     }
 
     /* Tags */
-    .tag-live { background: rgba(0, 0, 0, 0.5); color: #00e5ff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255,255,255,0.3); letter-spacing: 1px;}
-    .tag-alert { background: rgba(0, 0, 0, 0.5); color: #ff3333; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255,255,255,0.3); letter-spacing: 1px; margin-left: 10px;}
+    .tag-live { background: rgba(0, 229, 255, 0.15); color: #00e5ff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.4); letter-spacing: 1px;}
+    .tag-alert { background: rgba(255, 51, 51, 0.15); color: #ff3333; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255, 51, 51, 0.4); letter-spacing: 1px; margin-left: 10px;}
     
-    .card-title { font-size: 1.4rem; font-weight: 700; margin-top: 15px; margin-bottom: 10px; color: #ffffff; text-shadow: 0px 2px 5px rgba(0,0,0,0.8);}
-    .card-desc { color: #f1f5f9; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; text-shadow: 0px 1px 3px rgba(0,0,0,0.8);}
+    /* CRISP TEXT FOR DARK GLASS */
+    .card-title { font-size: 1.4rem; font-weight: 700; margin-top: 15px; margin-bottom: 10px; color: #ffffff;}
+    .card-desc { color: #e2e8f0; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -71,14 +71,13 @@ fig = go.Figure(data=go.Scattergeo(
     marker = dict(size = df['size'], color = df['color'], line_color='white', line_width=2, opacity=1)
 ))
 
-# MAGICAL GLOBE SETTINGS
 fig.update_layout(
     geo = dict(
         projection_type = 'orthographic',
         showland = True, 
-        landcolor = "#1e293b", # Solid dark land (Zameen)
+        landcolor = "#1e293b", 
         showocean = True, 
-        oceancolor = "#064273", # DEEP OCEAN BLUE WATER (Pani) 🌊
+        oceancolor = "#064273", 
         showcountries=True, countrycolor="rgba(255,255,255,0.4)",
         showcoastlines=True, coastlinecolor="rgba(255,255,255,0.7)",
         bgcolor="rgba(0,0,0,0)"
@@ -91,7 +90,7 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-# --- 5. THE PURE LIQUID GLASS CARDS ---
+# --- 5. THE DATA CARDS ---
 col1, col2 = st.columns(2)
 
 with col1:
