@@ -2,13 +2,13 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-# --- 1. PAGE CONFIGURATION ---
-st.set_page_config(page_title="APEX AI: Terminal", page_icon="🌍", layout="wide")
+# --- 1. PAGE CONFIGURATION & SYSTEM INITIALIZATION ---
+st.set_page_config(page_title="APEX AI: NEXUS-1", page_icon="🌍", layout="wide")
 
-# --- 2. TERMINAL CSS (Hacker/Glass Aesthetic) ---
+# --- 2. TERMINAL CSS (The Ultimate Dark Smoked Glass & Cinematic Layout) ---
 st.markdown("""
     <style>
-    /* 1. DARK CINEMATIC BACKGROUND */
+    /* 1. CINEMATIC BACKGROUND WITH READABILITY TINT */
     .stApp {
         background: linear-gradient(to bottom, rgba(2, 6, 23, 0.75) 0%, rgba(2, 6, 23, 0.4) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
         background-size: cover;
@@ -16,11 +16,11 @@ st.markdown("""
     }
     header {visibility: hidden;}
     
-    /* 2. TYPOGRAPHY */
+    /* 2. TYPOGRAPHY & BRANDING */
     h1 { font-weight: 900; font-size: 2.8rem; letter-spacing: -1px; margin-bottom: 0; color: #ffffff;}
     .neon-text { color: #00e5ff; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); }
     
-    /* 3. METRIC CARDS (Top Row) */
+    /* 3. TOP KPI METRIC BOXES */
     .metric-box {
         background: rgba(15, 23, 42, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -29,13 +29,14 @@ st.markdown("""
         text-align: center;
         backdrop-filter: blur(10px);
         margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
     .metric-title { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;}
     .metric-value { font-size: 1.6rem; color: #00e5ff; font-weight: 900; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);}
 
-    /* 4. SLEEK VERTICAL FEED CARDS (The Right Panel) */
+    /* 4. THE DARK SMOKED GLASS FEED CARDS */
     .feed-card {
-        background: rgba(10, 15, 30, 0.75); 
+        background: rgba(10, 15, 30, 0.75); /* Dark smoked glass for perfect readability */
         backdrop-filter: blur(20px); 
         -webkit-backdrop-filter: blur(20px);
         border-left: 4px solid #00e5ff; 
@@ -45,40 +46,39 @@ st.markdown("""
         border-radius: 8px; 
         padding: 20px;
         margin-bottom: 15px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
         transition: transform 0.2s ease;
     }
-    .feed-card:hover { transform: translateX(-5px); border-left: 4px solid #00ff9d; } /* Changes to green on hover */
+    .feed-card:hover { transform: translateX(-5px); border-left: 4px solid #ffffff; }
     
-    /* Tags for different Agent Roles */
+    /* 5. MULTI-AGENT TAGS (Color Coded Psychology) */
     .tag-eco { background: rgba(0, 255, 157, 0.15); color: #00ff9d; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(0, 255, 157, 0.4); letter-spacing: 1px;}
     .tag-tech { background: rgba(0, 229, 255, 0.15); color: #00e5ff; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.4); letter-spacing: 1px;}
     .tag-edu { background: rgba(255, 196, 0, 0.15); color: #ffc400; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(255, 196, 0, 0.4); letter-spacing: 1px;}
     
+    /* 6. RAW DATA TEXT STYLING */
     .card-title { font-size: 1.1rem; font-weight: 700; margin-top: 12px; margin-bottom: 8px; color: #ffffff; line-height: 1.3;}
     .card-desc { color: #cbd5e1; font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px;}
     .status-text { font-family: 'Courier New', monospace; font-size: 0.85rem; font-weight: bold;}
     
-    /* Fact list style */
     ul.fact-list { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; color: #e2e8f0; font-size: 0.85rem;}
     ul.fact-list li { margin-bottom: 4px; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. HEADER & KPI ROW (TOP) ---
+# --- 3. HEADER & KPI DASHBOARD (TOP ROW) ---
 st.markdown("<h1>APEX <span class='neon-text'>NEXUS-1</span></h1>", unsafe_allow_html=True)
 
-# Top Metrics Row
 m1, m2, m3, m4 = st.columns(4)
-with m1: st.markdown("<div class='metric-box'><div class='metric-title'>Data Nodes Active</div><div class='metric-value'>3,842</div></div>", unsafe_allow_html=True)
-with m2: st.markdown("<div class='metric-box'><div class='metric-title'>Market Volatility</div><div class='metric-value'>42.1%</div></div>", unsafe_allow_html=True)
-with m3: st.markdown("<div class='metric-box'><div class='metric-title'>Skill Demand Shift</div><div style='color:#00ff9d;' class='metric-value'>+18% AI</div></div>", unsafe_allow_html=True)
-with m4: st.markdown("<div class='metric-box'><div class='metric-title'>Agent Status</div><div class='metric-value'>AUTONOMOUS</div></div>", unsafe_allow_html=True)
+with m1: st.markdown("<div class='metric-box'><div class='metric-title'>Total Data Nodes</div><div class='metric-value'>3,842</div></div>", unsafe_allow_html=True)
+with m2: st.markdown("<div class='metric-box'><div class='metric-title'>Global Volatility</div><div class='metric-value'>42.1%</div></div>", unsafe_allow_html=True)
+with m3: st.markdown("<div class='metric-box'><div class='metric-title'>AI Skill Demand Shift</div><div style='color:#00ff9d;' class='metric-value'>+18%</div></div>", unsafe_allow_html=True)
+with m4: st.markdown("<div class='metric-box'><div class='metric-title'>Multi-Agent Status</div><div class='metric-value'>ONLINE & RAW</div></div>", unsafe_allow_html=True)
 
-# --- 4. MAIN INTERFACE (SPLIT LAYOUT) ---
+# --- 4. THE COMMAND CENTER (SPLIT LAYOUT) ---
 col_globe, col_feed = st.columns([1.5, 1])
 
-# ---> LEFT SIDE: THE 3D GLOBE
+# ---> LEFT WING: THE SOLID 3D OCEAN GLOBE
 with col_globe:
     df = pd.DataFrame([
         {"name": "INDIA", "lat": 28.6139, "lon": 77.2090, "color": "#00e5ff", "size": 12}, 
@@ -91,15 +91,15 @@ with col_globe:
         lon = df['lon'], lat = df['lat'], text = df['name'],
         mode = 'markers+text',
         textposition="top center",
-        textfont=dict(family="Arial", size=11, color="rgba(255,255,255,0.8)"),
+        textfont=dict(family="Arial Black", size=12, color="white"),
         marker = dict(size = df['size'], color = df['color'], line_color='white', line_width=1, opacity=1)
     ))
 
     fig.update_layout(
         geo = dict(
             projection_type = 'orthographic',
-            showland = True, landcolor = "#1e293b", 
-            showocean = True, oceancolor = "#064273", 
+            showland = True, landcolor = "#1e293b",     # Solid Land
+            showocean = True, oceancolor = "#064273",    # Deep Blue Ocean Water
             showcountries=True, countrycolor="rgba(255,255,255,0.2)",
             showcoastlines=True, coastlinecolor="rgba(255,255,255,0.4)",
             bgcolor="rgba(0,0,0,0)"
@@ -107,61 +107,61 @@ with col_globe:
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         margin=dict(l=0, r=0, t=0, b=0),
-        height=580 
+        height=600 
     )
     st.plotly_chart(fig, use_container_width=True)
 
-# ---> RIGHT SIDE: THE RAW DATA FEED (No Opinions, Just Facts)
+# ---> RIGHT WING: THE RAW AUTONOMOUS DATA FEED
 with col_feed:
-    st.markdown("<h4 style='color: #8892b0; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>📡 AUTONOMOUS DATA FEED</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #8892b0; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>📡 LIVE TRUTH TERMINAL (RAW DATA)</h4>", unsafe_allow_html=True)
     
-    # 1. Economic & Market Agent
+    # 1. Economic Agent
     st.markdown("""
-    <div class="feed-card">
-        <span class="tag-eco">ECONOMIC AGENT</span>
+    <div class="feed-card" style="border-left-color: #00ff9d;">
+        <span class="tag-eco">ECONOMIC & MARKET AGENT</span>
         <div class="card-title">Global IT Sector Shift: Hiring vs. Revenue</div>
         <div class="card-desc">
-            Raw Data Extracted (Last 72 Hrs):
+            Extracted Telemetry (Last 72 Hrs):
             <ul class="fact-list">
-                <li>Top 5 Indian IT firms report 14% drop in entry-level hiring.</li>
+                <li>Top 5 Indian IT firms report 14% drop in traditional entry-level hiring.</li>
                 <li>Simultaneous 22% increase in mid-level AI integration roles.</li>
                 <li>Freelance gig economy payouts grew by 9% globally.</li>
             </ul>
         </div>
-        <div class="status-text" style="color:#00ff9d;">>> DECISION MATRIX: OPEN OPPORTUNITY IN 'AI INTEGRATION' SKILLS.</div>
+        <div class="status-text" style="color:#00ff9d;">>> DATA PATHWAY: OPPORTUNITY IN 'AI INTEGRATION' SKILLS.</div>
     </div>
     """, unsafe_allow_html=True)
 
     # 2. Science & Tech Agent
     st.markdown("""
-    <div class="feed-card">
+    <div class="feed-card" style="border-left-color: #00e5ff;">
         <span class="tag-tech">SCIENCE & TECH AGENT</span>
-        <div class="card-title">Open-Source LLM Breakthrough</div>
+        <div class="card-title">Open-Source LLM Hardware Breakthrough</div>
         <div class="card-desc">
-            Telemetry Data (GitHub & Research Papers):
+            Raw Fact Cross-Check (GitHub & Hardware Nodes):
             <ul class="fact-list">
-                <li>New open-weight model runs locally on 16GB RAM devices.</li>
-                <li>Data privacy compliance for local businesses increases to 100% using this method.</li>
-                <li>Cloud dependency costs reduced by an average of $400/month for startups.</li>
+                <li>New open-weight AI model successfully runs entirely locally on 16GB RAM laptops.</li>
+                <li>Data privacy compliance for local businesses reaches 100% using local deployment.</li>
+                <li>Average monthly cloud cost reduced by $400 for early-adopter startups.</li>
             </ul>
         </div>
-        <div class="status-text neon-text">>> ACTIONABLE INSIGHT: LOCAL DEPLOYMENT HIGHLY VIABLE.</div>
+        <div class="status-text neon-text">>> DATA PATHWAY: LOCAL AI DEPLOYMENT IS HIGHLY VIABLE.</div>
     </div>
     """, unsafe_allow_html=True)
     
     # 3. Education Agent
     st.markdown("""
-    <div class="feed-card">
+    <div class="feed-card" style="border-left-color: #ffc400;">
         <span class="tag-edu">EDUCATION AGENT</span>
         <div class="card-title">Global Skill Gap Index 2026</div>
         <div class="card-desc">
-            Cross-Referenced University & Industry Data:
+            Verified University & Industry Hiring Data:
             <ul class="fact-list">
-                <li>Traditional coding degrees show a 31% overlap with automated AI coding tools.</li>
+                <li>Traditional coding degrees show 31% overlap with new automated AI coding tools.</li>
                 <li>Prompt Engineering, System Architecture, and AI-Ethics courses see 400% enrollment spike.</li>
-                <li>Free online certifications holding equal weight to diplomas in tech recruitment.</li>
+                <li>Tech recruiters now weighing specific online certs equal to standard diplomas.</li>
             </ul>
         </div>
-        <div class="status-text" style="color:#ffc400;">>> RESOURCE AVAILABILITY: ABUNDANT.</div>
+        <div class="status-text" style="color:#ffc400;">>> DATA PATHWAY: NON-TRADITIONAL SKILL ACQUISITION VALIDATED.</div>
     </div>
     """, unsafe_allow_html=True)
