@@ -3,112 +3,165 @@ import pandas as pd
 import plotly.graph_objects as go
 
 # --- 1. PAGE CONFIGURATION ---
-st.set_page_config(page_title="APEX AI: The World, Live", page_icon="🌍", layout="wide")
+st.set_page_config(page_title="APEX AI: Terminal", page_icon="🌍", layout="wide")
 
-# --- 2. ADVANCED CSS (DARK SMOKED GLASS FIX) ---
+# --- 2. TERMINAL CSS (Hacker/Glass Aesthetic) ---
 st.markdown("""
     <style>
-    /* 1. THE COLORFUL ABSTRACT BACKGROUND */
+    /* 1. DARK CINEMATIC BACKGROUND */
     .stApp {
-        background: linear-gradient(to bottom, rgba(5, 10, 20, 0.4) 0%, rgba(5, 10, 20, 0.1) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
+        background: linear-gradient(to bottom, rgba(2, 6, 23, 0.75) 0%, rgba(2, 6, 23, 0.4) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
         background-size: cover;
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
     }
-    
     header {visibility: hidden;}
     
     /* 2. TYPOGRAPHY */
-    h1 { font-weight: 900; font-size: 4rem; letter-spacing: -2px; margin-bottom: 0; color: #ffffff; text-shadow: 0px 4px 15px rgba(0,0,0,0.8);}
+    h1 { font-weight: 900; font-size: 2.8rem; letter-spacing: -1px; margin-bottom: 0; color: #ffffff;}
     .neon-text { color: #00e5ff; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); }
-    .sub-text { color: #f8fafc; font-size: 1.2rem; margin-bottom: 30px; font-weight: 500; text-shadow: 0px 2px 10px rgba(0,0,0,0.8);}
+    
+    /* 3. METRIC CARDS (Top Row) */
+    .metric-box {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        margin-bottom: 20px;
+    }
+    .metric-title { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;}
+    .metric-value { font-size: 1.6rem; color: #00e5ff; font-weight: 900; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);}
 
-    /* 3. DARK SMOKED GLASS CARDS (THE FIX) */
-    .glass-card {
-        background: rgba(10, 15, 30, 0.75); /* Dark Tint for extreme readability */
+    /* 4. SLEEK VERTICAL FEED CARDS (The Right Panel) */
+    .feed-card {
+        background: rgba(10, 15, 30, 0.75); 
         backdrop-filter: blur(20px); 
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.15); /* Light glowing edge */
-        border-top: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 24px; 
-        padding: 30px;
-        margin-bottom: 25px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6); /* Deep shadow */
-        transition: transform 0.3s ease;
+        border-left: 4px solid #00e5ff; 
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px; 
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        transition: transform 0.2s ease;
     }
+    .feed-card:hover { transform: translateX(-5px); border-left: 4px solid #00ff9d; } /* Changes to green on hover */
     
-    .glass-card:hover {
-        transform: translateY(-5px);
-        border: 1px solid rgba(0, 229, 255, 0.5); /* Cyan glow on hover */
-    }
-
-    /* Tags */
-    .tag-live { background: rgba(0, 229, 255, 0.15); color: #00e5ff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.4); letter-spacing: 1px;}
-    .tag-alert { background: rgba(255, 51, 51, 0.15); color: #ff3333; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255, 51, 51, 0.4); letter-spacing: 1px; margin-left: 10px;}
+    /* Tags for different Agent Roles */
+    .tag-eco { background: rgba(0, 255, 157, 0.15); color: #00ff9d; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(0, 255, 157, 0.4); letter-spacing: 1px;}
+    .tag-tech { background: rgba(0, 229, 255, 0.15); color: #00e5ff; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.4); letter-spacing: 1px;}
+    .tag-edu { background: rgba(255, 196, 0, 0.15); color: #ffc400; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(255, 196, 0, 0.4); letter-spacing: 1px;}
     
-    /* CRISP TEXT FOR DARK GLASS */
-    .card-title { font-size: 1.4rem; font-weight: 700; margin-top: 15px; margin-bottom: 10px; color: #ffffff;}
-    .card-desc { color: #e2e8f0; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;}
+    .card-title { font-size: 1.1rem; font-weight: 700; margin-top: 12px; margin-bottom: 8px; color: #ffffff; line-height: 1.3;}
+    .card-desc { color: #cbd5e1; font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px;}
+    .status-text { font-family: 'Courier New', monospace; font-size: 0.85rem; font-weight: bold;}
+    
+    /* Fact list style */
+    ul.fact-list { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; color: #e2e8f0; font-size: 0.85rem;}
+    ul.fact-list li { margin-bottom: 4px; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. HEADER ---
-st.markdown("<h1>The World, <span class='neon-text'>Live.</span></h1>", unsafe_allow_html=True)
-st.markdown("<div class='sub-text'>Where AI & tech-policy stories are breaking. Spin the globe.</div>", unsafe_allow_html=True)
+# --- 3. HEADER & KPI ROW (TOP) ---
+st.markdown("<h1>APEX <span class='neon-text'>NEXUS-1</span></h1>", unsafe_allow_html=True)
 
-# --- 4. THE SOLID GLOBE WITH WATER & COUNTRY NAMES ---
-df = pd.DataFrame([
-    {"name": "INDIA", "lat": 28.6139, "lon": 77.2090, "color": "#00e5ff", "size": 14}, 
-    {"name": "USA", "lat": 38.9072, "lon": -77.0369, "color": "#ff3333", "size": 14},
-    {"name": "RUSSIA", "lat": 55.7558, "lon": 37.6173, "color": "#ff3333", "size": 14},
-    {"name": "CHINA", "lat": 39.9042, "lon": 116.4074, "color": "#00e5ff", "size": 14}
-])
+# Top Metrics Row
+m1, m2, m3, m4 = st.columns(4)
+with m1: st.markdown("<div class='metric-box'><div class='metric-title'>Data Nodes Active</div><div class='metric-value'>3,842</div></div>", unsafe_allow_html=True)
+with m2: st.markdown("<div class='metric-box'><div class='metric-title'>Market Volatility</div><div class='metric-value'>42.1%</div></div>", unsafe_allow_html=True)
+with m3: st.markdown("<div class='metric-box'><div class='metric-title'>Skill Demand Shift</div><div style='color:#00ff9d;' class='metric-value'>+18% AI</div></div>", unsafe_allow_html=True)
+with m4: st.markdown("<div class='metric-box'><div class='metric-title'>Agent Status</div><div class='metric-value'>AUTONOMOUS</div></div>", unsafe_allow_html=True)
 
-fig = go.Figure(data=go.Scattergeo(
-    lon = df['lon'], lat = df['lat'], text = df['name'],
-    mode = 'markers+text',
-    textposition="top center",
-    textfont=dict(family="Arial Black", size=14, color="white"),
-    marker = dict(size = df['size'], color = df['color'], line_color='white', line_width=2, opacity=1)
-))
+# --- 4. MAIN INTERFACE (SPLIT LAYOUT) ---
+col_globe, col_feed = st.columns([1.5, 1])
 
-fig.update_layout(
-    geo = dict(
-        projection_type = 'orthographic',
-        showland = True, 
-        landcolor = "#1e293b", 
-        showocean = True, 
-        oceancolor = "#064273", 
-        showcountries=True, countrycolor="rgba(255,255,255,0.4)",
-        showcoastlines=True, coastlinecolor="rgba(255,255,255,0.7)",
-        bgcolor="rgba(0,0,0,0)"
-    ),
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    margin=dict(l=0, r=0, t=0, b=0),
-    height=480
-)
+# ---> LEFT SIDE: THE 3D GLOBE
+with col_globe:
+    df = pd.DataFrame([
+        {"name": "INDIA", "lat": 28.6139, "lon": 77.2090, "color": "#00e5ff", "size": 12}, 
+        {"name": "USA", "lat": 38.9072, "lon": -77.0369, "color": "#ff3333", "size": 12},
+        {"name": "RUSSIA", "lat": 55.7558, "lon": 37.6173, "color": "#ffc400", "size": 12},
+        {"name": "CHINA", "lat": 39.9042, "lon": 116.4074, "color": "#00ff9d", "size": 12}
+    ])
 
-st.plotly_chart(fig, use_container_width=True)
+    fig = go.Figure(data=go.Scattergeo(
+        lon = df['lon'], lat = df['lat'], text = df['name'],
+        mode = 'markers+text',
+        textposition="top center",
+        textfont=dict(family="Arial", size=11, color="rgba(255,255,255,0.8)"),
+        marker = dict(size = df['size'], color = df['color'], line_color='white', line_width=1, opacity=1)
+    ))
 
-# --- 5. THE DATA CARDS ---
-col1, col2 = st.columns(2)
+    fig.update_layout(
+        geo = dict(
+            projection_type = 'orthographic',
+            showland = True, landcolor = "#1e293b", 
+            showocean = True, oceancolor = "#064273", 
+            showcountries=True, countrycolor="rgba(255,255,255,0.2)",
+            showcoastlines=True, coastlinecolor="rgba(255,255,255,0.4)",
+            bgcolor="rgba(0,0,0,0)"
+        ),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=580 
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-with col1:
+# ---> RIGHT SIDE: THE RAW DATA FEED (No Opinions, Just Facts)
+with col_feed:
+    st.markdown("<h4 style='color: #8892b0; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>📡 AUTONOMOUS DATA FEED</h4>", unsafe_allow_html=True)
+    
+    # 1. Economic & Market Agent
     st.markdown("""
-    <div class="glass-card">
-        <span class="tag-live">LIVE NODE</span><span class="tag-alert">HOT SIGNAL</span>
-        <div class="card-title">Global Semiconductor Policy Shift</div>
-        <div class="card-desc">Autonomous scan detected new export restrictions from US to Asian markets. Expected disruption in supply chain within 72 hours.</div>
-        <b class="neon-text">⚡ APEX Verification: True</b>
+    <div class="feed-card">
+        <span class="tag-eco">ECONOMIC AGENT</span>
+        <div class="card-title">Global IT Sector Shift: Hiring vs. Revenue</div>
+        <div class="card-desc">
+            Raw Data Extracted (Last 72 Hrs):
+            <ul class="fact-list">
+                <li>Top 5 Indian IT firms report 14% drop in entry-level hiring.</li>
+                <li>Simultaneous 22% increase in mid-level AI integration roles.</li>
+                <li>Freelance gig economy payouts grew by 9% globally.</li>
+            </ul>
+        </div>
+        <div class="status-text" style="color:#00ff9d;">>> DECISION MATRIX: OPEN OPPORTUNITY IN 'AI INTEGRATION' SKILLS.</div>
     </div>
     """, unsafe_allow_html=True)
 
-with col2:
+    # 2. Science & Tech Agent
     st.markdown("""
-    <div class="glass-card">
-        <span class="tag-live">AI FORENSIC</span>
-        <div class="card-title">Crude Oil vs. Pump Price Gap</div>
-        <div class="card-desc">Brent crude down by 14%, yet domestic retail fuel remains unchanged. Cross-checking the fiscal deficit narrative pushed by national media.</div>
-        <b class="neon-text">⚡ APEX Status: Analysing...</b>
+    <div class="feed-card">
+        <span class="tag-tech">SCIENCE & TECH AGENT</span>
+        <div class="card-title">Open-Source LLM Breakthrough</div>
+        <div class="card-desc">
+            Telemetry Data (GitHub & Research Papers):
+            <ul class="fact-list">
+                <li>New open-weight model runs locally on 16GB RAM devices.</li>
+                <li>Data privacy compliance for local businesses increases to 100% using this method.</li>
+                <li>Cloud dependency costs reduced by an average of $400/month for startups.</li>
+            </ul>
+        </div>
+        <div class="status-text neon-text">>> ACTIONABLE INSIGHT: LOCAL DEPLOYMENT HIGHLY VIABLE.</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 3. Education Agent
+    st.markdown("""
+    <div class="feed-card">
+        <span class="tag-edu">EDUCATION AGENT</span>
+        <div class="card-title">Global Skill Gap Index 2026</div>
+        <div class="card-desc">
+            Cross-Referenced University & Industry Data:
+            <ul class="fact-list">
+                <li>Traditional coding degrees show a 31% overlap with automated AI coding tools.</li>
+                <li>Prompt Engineering, System Architecture, and AI-Ethics courses see 400% enrollment spike.</li>
+                <li>Free online certifications holding equal weight to diplomas in tech recruitment.</li>
+            </ul>
+        </div>
+        <div class="status-text" style="color:#ffc400;">>> RESOURCE AVAILABILITY: ABUNDANT.</div>
     </div>
     """, unsafe_allow_html=True)
