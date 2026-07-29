@@ -11,44 +11,38 @@ st.set_page_config(page_title="APEX AI: NEXUS-1", page_icon="🌍", layout="wide
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent. Paste any live headline from the right feed, and I will decode the deep strategy for you."}
+        {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent. Paste any live data from the right feed, and I will decode the strategy for you."}
     ]
 
-# --- 2. THE LIVE DATA PIPELINE (THE ENGINE) 🚀 ---
-# @st.cache_data ensures we don't spam the server. It updates every 10 minutes (600 seconds).
-@st.cache_data(ttl=600)
-def fetch_live_telemetry(query):
-    try:
-        # Hiding our identity as a browser to safely extract data
-        safe_query = urllib.parse.quote(query)
-        url = f"https://news.google.com/rss/search?q={safe_query}&hl=en-US&gl=US&ceid=US:en"
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        response = urllib.request.urlopen(req)
-        xml_data = response.read()
-        root = ET.fromstring(xml_data)
-        
-        facts = []
-        for item in root.findall('.//item')[:2]: # Extract top 2 absolute latest facts
-            title = item.find('title').text
-            # Clean up the source name at the end (e.g., "- Reuters")
-            clean_title = title.rsplit(' - ', 1)[0] if ' - ' in title else title
-            facts.append(clean_title)
-        return facts
-    except Exception as e:
-        return ["Autonomous node scan failed.", "Re-routing connection..."]
-
-# Fetching real-time data for our 3 Agents
-eco_facts = fetch_live_telemetry("Global Economy OR Stock Market Shift")
-tech_facts = fetch_live_telemetry("Artificial Intelligence Innovation OR Tech Breakthrough")
-edu_facts = fetch_live_telemetry("Future Jobs OR Skills Demand OR Hiring Trends")
+# --- 2. LANGUAGE CONFIGURATION (THE SMART HACK) 🧠 ---
+# Zero extra libraries. We manipulate the data nodes directly!
+LANG_CONFIG = {
+    "English": {
+        "hl": "en-US", "gl": "US",
+        "q_eco": "Global Economy OR Stock Market Shift",
+        "q_tech": "Artificial Intelligence Innovation OR Tech Breakthrough",
+        "q_edu": "Future Jobs OR Skills Demand OR Hiring Trends",
+        "ui_title": "📡 LIVE TRUTH TERMINAL (RAW DATA)",
+        "ui_eco": "ECONOMIC & MARKET AGENT",
+        "ui_tech": "SCIENCE & TECH AGENT",
+        "ui_edu": "EDUCATION AGENT"
+    },
+    "Hindi (हिंदी)": {
+        "hl": "hi", "gl": "IN",
+        "q_eco": "वैश्विक अर्थव्यवस्था OR शेयर बाजार",
+        "q_tech": "आर्टिफिशियल इंटेलिजेंस तकनीक नवप्रवर्तन",
+        "q_edu": "भविष्य की नौकरियां OR कौशल विकास",
+        "ui_title": "📡 लाइव ट्रुथ टर्मिनल (कच्चा डेटा)",
+        "ui_eco": "आर्थिक और बाजार एजेंट",
+        "ui_tech": "विज्ञान और तकनीकी एजेंट",
+        "ui_edu": "शिक्षा और कौशल एजेंट"
+    }
+}
 
 # --- 3. TERMINAL CSS (Hacker Vibe) ---
 st.markdown("""
     <style>
-    .stApp {
-        background: linear-gradient(to bottom, rgba(2, 6, 23, 0.75) 0%, rgba(2, 6, 23, 0.4) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
-        background-size: cover; font-family: 'Inter', sans-serif;
-    }
+    .stApp { background: linear-gradient(to bottom, rgba(2, 6, 23, 0.75) 0%, rgba(2, 6, 23, 0.4) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed; background-size: cover; font-family: 'Inter', sans-serif; }
     header { background-color: transparent !important; }
     .stAppDeployButton { display: none !important; }
     [data-testid="stToolbar"] { display: none !important; }
@@ -79,43 +73,70 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. THE APEX ORACLE (SIDEBAR CHAT) ---
+# --- 4. THE APEX ORACLE & LANGUAGE SELECTOR (SIDEBAR) ---
 with st.sidebar:
+    st.markdown("<div class='sidebar-title'>⚙️ SYSTEM CONTROL</div>", unsafe_allow_html=True)
+    
+    # 🎯 THE MAGIC DROPDOWN
+    selected_lang = st.selectbox("🌐 Select Output Language", list(LANG_CONFIG.keys()))
+    cfg = LANG_CONFIG[selected_lang]
+    
+    st.markdown("<hr style='border-color: rgba(0,229,255,0.2);'>", unsafe_allow_html=True)
     st.markdown("<div class='sidebar-title'>💬 APEX ORACLE</div>", unsafe_allow_html=True)
     
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
             
-    if prompt := st.chat_input("Ask Oracle to decode a live headline..."):
+    if prompt := st.chat_input("Ask Oracle to decode data..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-            
+        with st.chat_message("user"): st.markdown(prompt)
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
-            # The AI stays neutral. It analyzes the raw data provided.
-            full_response = f"**DATA LOGGED.** \n\nQuery: '{prompt}'. \n\n*Forensic Output:* The requested data point highlights a macro-shift. No emotional bias detected. **Actionable Directive:** Analyze this shift to position your capital, skills, or business strategy ahead of the curve."
-            
+            full_response = f"**DATA LOGGED.** \n\nQuery: '{prompt}'. \n\n*Forensic Output:* The requested data point highlights a macro-shift. **Actionable Directive:** Analyze this shift to position your capital, skills, or business strategy ahead of the curve."
             typed_text = ""
             for char in full_response:
                 typed_text += char
                 message_placeholder.markdown(typed_text + "▌")
                 time.sleep(0.01)
             message_placeholder.markdown(full_response)
-            
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# --- 5. MAIN DASHBOARD ---
+# --- 5. THE LIVE DATA PIPELINE (Multi-Lingual Engine) 🚀 ---
+@st.cache_data(ttl=600)
+def fetch_live_telemetry(query, hl, gl):
+    try:
+        safe_query = urllib.parse.quote(query)
+        url = f"https://news.google.com/rss/search?q={safe_query}&hl={hl}&gl={gl}"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        response = urllib.request.urlopen(req)
+        xml_data = response.read()
+        root = ET.fromstring(xml_data)
+        
+        facts = []
+        for item in root.findall('.//item')[:2]:
+            title = item.find('title').text
+            clean_title = title.rsplit(' - ', 1)[0] if ' - ' in title else title
+            facts.append(clean_title)
+        return facts
+    except Exception as e:
+        return ["Node scan failed.", "Re-routing connection..."]
+
+# Fetching real-time data dynamically based on selected language
+eco_facts = fetch_live_telemetry(cfg["q_eco"], cfg["hl"], cfg["gl"])
+tech_facts = fetch_live_telemetry(cfg["q_tech"], cfg["hl"], cfg["gl"])
+edu_facts = fetch_live_telemetry(cfg["q_edu"], cfg["hl"], cfg["gl"])
+
+# --- 6. MAIN DASHBOARD ---
 st.markdown("<h1>APEX <span class='neon-text'>NEXUS-1</span></h1>", unsafe_allow_html=True)
 
 m1, m2, m3, m4 = st.columns(4)
 with m1: st.markdown("<div class='metric-box'><div class='metric-title'>Live Nodes Active</div><div class='metric-value'>5,124</div></div>", unsafe_allow_html=True)
 with m2: st.markdown("<div class='metric-box'><div class='metric-title'>System Mode</div><div class='metric-value'>LIVE SYNC</div></div>", unsafe_allow_html=True)
 with m3: st.markdown("<div class='metric-box'><div class='metric-title'>Bias Filter</div><div style='color:#00ff9d;' class='metric-value'>100% PURE</div></div>", unsafe_allow_html=True)
-with m4: st.markdown("<div class='metric-box'><div class='metric-title'>Pipeline Status</div><div class='metric-value'>REAL-TIME</div></div>", unsafe_allow_html=True)
+with m4: st.markdown(f"<div class='metric-box'><div class='metric-title'>Language</div><div class='metric-value'>{selected_lang[:2].upper()}</div></div>", unsafe_allow_html=True)
 
-# --- 6. SPLIT LAYOUT (Globe + Live Feed) ---
+# --- 7. SPLIT LAYOUT (Globe + Live Feed) ---
 col_globe, col_feed = st.columns([1.5, 1])
 
 with col_globe:
@@ -148,52 +169,49 @@ with col_globe:
     st.plotly_chart(fig, use_container_width=True)
 
 with col_feed:
-    st.markdown("<h4 style='color: #8892b0; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>📡 GLOBAL LIVE DATA EXTRACTION</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='color: #8892b0; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>{cfg['ui_title']}</h4>", unsafe_allow_html=True)
     
-    # AGENT 1: ECONOMY (Real Live Data)
+    # AGENT 1: ECONOMY
     st.markdown(f"""
     <div class="feed-card" style="border-top: 1px solid #00ff9d;">
-        <span class="tag tag-eco">ECONOMIC & MARKET AGENT</span>
+        <span class="tag tag-eco">{cfg['ui_eco']}</span>
         <div class="card-title">Live Financial Telemetry</div>
         <div class="card-desc">
-            Raw Global Extracts (Updated moments ago):
             <ul class="fact-list">
                 <li>{eco_facts[0] if len(eco_facts) > 0 else "Scanning node..."}</li>
                 <li>{eco_facts[1] if len(eco_facts) > 1 else "Scanning node..."}</li>
             </ul>
         </div>
-        <div class="status-text" style="color:#00ff9d;">>> DIRECTIVE: EVALUATE CAPITAL MOVEMENT BASED ON ABOVE FACTS.</div>
+        <div class="status-text" style="color:#00ff9d;">>> DIRECTIVE: EVALUATE CAPITAL MOVEMENT.</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # AGENT 2: SCIENCE & TECH (Real Live Data)
+    # AGENT 2: SCIENCE & TECH
     st.markdown(f"""
     <div class="feed-card" style="border-top: 1px solid #00e5ff;">
-        <span class="tag tag-tech">SCIENCE & TECH AGENT</span>
+        <span class="tag tag-tech">{cfg['ui_tech']}</span>
         <div class="card-title">Live Tech Innovations</div>
         <div class="card-desc">
-            Raw Global Extracts:
             <ul class="fact-list">
                 <li>{tech_facts[0] if len(tech_facts) > 0 else "Scanning node..."}</li>
                 <li>{tech_facts[1] if len(tech_facts) > 1 else "Scanning node..."}</li>
             </ul>
         </div>
-        <div class="status-text neon-text">>> DIRECTIVE: IDENTIFY TOOLS/TECH TO UPGRADE PERSONAL ARSENAL.</div>
+        <div class="status-text neon-text">>> DIRECTIVE: IDENTIFY TOOLS TO UPGRADE ARSENAL.</div>
     </div>
     """, unsafe_allow_html=True)
     
-    # AGENT 3: EDUCATION & SKILLS (Real Live Data)
+    # AGENT 3: EDUCATION
     st.markdown(f"""
     <div class="feed-card" style="border-top: 1px solid #ffc400;">
-        <span class="tag tag-edu">EDUCATION AGENT</span>
-        <div class="card-title">Live Skill & Hiring Trends</div>
+        <span class="tag tag-edu">{cfg['ui_edu']}</span>
+        <div class="card-title">Live Skill Trends</div>
         <div class="card-desc">
-            Raw Global Extracts:
             <ul class="fact-list">
                 <li>{edu_facts[0] if len(edu_facts) > 0 else "Scanning node..."}</li>
                 <li>{edu_facts[1] if len(edu_facts) > 1 else "Scanning node..."}</li>
             </ul>
         </div>
-        <div class="status-text" style="color:#ffc400;">>> DIRECTIVE: ALIGN LEARNING PATHWAY WITH EMERGING DEMAND.</div>
+        <div class="status-text" style="color:#ffc400;">>> DIRECTIVE: ALIGN LEARNING WITH DEMAND.</div>
     </div>
     """, unsafe_allow_html=True)
