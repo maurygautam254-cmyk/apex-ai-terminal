@@ -6,12 +6,12 @@ import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
 
-# --- 1. SYSTEM INITIALIZATION & PAGE CONFIG ---
+# --- 1. SYSTEM INITIALIZATION ---
 st.set_page_config(page_title="APEX AI: NEXUS-1", page_icon="🌍", layout="wide", initial_sidebar_state="expanded")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent. Paste any live data from the right feed, and I will decode the strategy for you."}
+        {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent."}
     ]
 
 # --- 2. LANGUAGE CONFIGURATION ---
@@ -38,13 +38,31 @@ LANG_CONFIG = {
     }
 }
 
-# --- 3. ADVANCED TERMINAL CSS (Added Link & Expander Styling) ---
+# --- 3. HARDCORE CSS FIXES (Sidebar Button + HTML Reset) ---
 st.markdown("""
     <style>
     .stApp { background: linear-gradient(to bottom, rgba(2, 6, 23, 0.75) 0%, rgba(2, 6, 23, 0.4) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed; background-size: cover; font-family: 'Inter', sans-serif; }
     header { background-color: transparent !important; }
     .stAppDeployButton, [data-testid="stToolbar"] { display: none !important; }
     
+    /* 🚨 THE SIDEBAR BUTTON FIX (Solid Cyan with Black Arrow) 🚨 */
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        background-color: #00e5ff !important; /* Bright Cyan Base */
+        border-radius: 6px !important;
+        margin: 15px !important;
+        padding: 5px !important;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.8) !important;
+        z-index: 999999 !important;
+    }
+    [data-testid="collapsedControl"] svg {
+        fill: #020617 !important; /* Dark Black Arrow */
+        color: #020617 !important;
+        width: 28px !important;
+        height: 28px !important;
+    }
+
     [data-testid="stSidebar"] { background-color: rgba(10, 15, 30, 0.95) !important; border-right: 1px solid rgba(0, 229, 255, 0.3); }
     .sidebar-title { color: #00e5ff; font-weight: 900; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 20px;}
     
@@ -56,7 +74,6 @@ st.markdown("""
     .metric-value { font-size: 1.6rem; color: #00e5ff; font-weight: 900;}
 
     .feed-card { background: rgba(10, 15, 30, 0.75); backdrop-filter: blur(20px); border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: transform 0.2s ease;}
-    .feed-card:hover { transform: translateX(-5px); }
     
     .tag { padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
     .tag-eco { background: rgba(0, 255, 157, 0.15); color: #00ff9d; border: 1px solid rgba(0, 255, 157, 0.4); }
@@ -64,25 +81,19 @@ st.markdown("""
     .tag-edu { background: rgba(255, 196, 0, 0.15); color: #ffc400; border: 1px solid rgba(255, 196, 0, 0.4); }
     
     .card-title { font-size: 1.1rem; font-weight: 700; margin-top: 12px; margin-bottom: 8px; color: #ffffff; line-height: 1.3;}
-    .card-desc { color: #cbd5e1; font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px;}
     .status-text { font-family: 'Courier New', monospace; font-size: 0.85rem; font-weight: bold; margin-top:10px;}
     
-    /* 🚨 NEW LINK AND ARCHIVE STYLING 🚨 */
     a.headline-link { color: #e2e8f0; text-decoration: none; transition: 0.2s;}
     a.headline-link:hover { color: #00e5ff; text-decoration: underline;}
     ul.fact-list { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; color: #e2e8f0; font-size: 0.85rem;}
     ul.fact-list li { margin-bottom: 8px; }
     
     details.archive-details { margin-top: 15px; }
-    summary.archive-summary { color: #94a3b8; font-size: 0.8rem; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; outline: none; transition: 0.3s; list-style: none;}
-    summary.archive-summary::-webkit-details-marker { display: none; }
-    summary.archive-summary:hover { color: #ffffff; text-shadow: 0 0 8px rgba(255,255,255,0.8); }
-    ul.archive-list { max-height: 180px; overflow-y: auto; margin-top: 10px; padding-right: 10px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top:10px;}
-    
-    /* Custom Scrollbar for Archive */
+    summary.archive-summary { color: #94a3b8; font-size: 0.8rem; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; outline: none; list-style: none;}
+    summary.archive-summary:hover { color: #ffffff; }
+    ul.archive-list { max-height: 200px; overflow-y: auto; margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top:10px;}
     ul.archive-list::-webkit-scrollbar { width: 5px; }
     ul.archive-list::-webkit-scrollbar-thumb { background: #00e5ff; border-radius: 4px; }
-    ul.archive-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
     </style>
 """, unsafe_allow_html=True)
 
@@ -104,7 +115,7 @@ with st.sidebar:
         with st.chat_message("user"): st.markdown(prompt)
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
-            full_response = f"**DATA LOGGED.** \n\nQuery: '{prompt}'. \n\n*Forensic Output:* The requested data point highlights a macro-shift. **Actionable Directive:** Analyze this shift to position your capital or skills ahead of the curve."
+            full_response = f"**DATA LOGGED.** \n\nQuery: '{prompt}'. \n\n*Forensic Output:* Analyzing macro-shift. **Actionable Directive:** Position capital or skills ahead of the curve."
             typed_text = ""
             for char in full_response:
                 typed_text += char
@@ -113,7 +124,7 @@ with st.sidebar:
             message_placeholder.markdown(full_response)
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# --- 5. THE LIVE DATA PIPELINE (Now fetching TOP 12 items + Links) 🚀 ---
+# --- 5. THE LIVE DATA PIPELINE (15 ITEMS - FULL NEWSPAPER ARCHIVE) 🚀 ---
 @st.cache_data(ttl=600)
 def fetch_live_telemetry(query, hl, gl):
     try:
@@ -125,51 +136,26 @@ def fetch_live_telemetry(query, hl, gl):
         root = ET.fromstring(xml_data)
         
         facts = []
-        for item in root.findall('.//item')[:12]: # Fetching top 12 now!
+        for item in root.findall('.//item')[:15]: # 🚨 15 Live News Items!
             title = item.find('title').text
             link = item.find('link').text
             clean_title = title.rsplit(' - ', 1)[0] if ' - ' in title else title
             facts.append({"title": clean_title, "link": link})
         return facts
     except Exception as e:
-        return [{"title": "Node scan failed.", "link": "#"}, {"title": "Re-routing connection...", "link": "#"}]
+        return [{"title": "Node scan failed.", "link": "#"}]
 
 eco_facts = fetch_live_telemetry(cfg["q_eco"], cfg["hl"], cfg["gl"])
 tech_facts = fetch_live_telemetry(cfg["q_tech"], cfg["hl"], cfg["gl"])
 edu_facts = fetch_live_telemetry(cfg["q_edu"], cfg["hl"], cfg["gl"])
 
-# Helper function to generate Clickable HTML Cards
+# THE BUG FIX: Writing HTML in one continuous string without indentation so Streamlit doesn't think it's a code block.
 def create_card_html(facts, agent_name, tag_class, border_color, directive):
     if not facts: return ""
-    
-    # Top 2 headlines
     top_html = "".join([f"<li><a href='{f['link']}' target='_blank' class='headline-link'>{f['title']}</a></li>" for f in facts[:2]])
-    
-    # Remaining 10 headlines for the dropdown archive
     archive_html = "".join([f"<li><a href='{f['link']}' target='_blank' class='headline-link'>{f['title']}</a></li>" for f in facts[2:]])
-    
-    archive_section = f"""
-        <details class="archive-details">
-            <summary class="archive-summary">[+] DECRYPT FULL ARCHIVE ({len(facts[2:])} MORE)</summary>
-            <ul class="fact-list archive-list">
-                {archive_html}
-            </ul>
-        </details>
-    """ if archive_html else ""
-
-    return f"""
-    <div class="feed-card" style="border-top: 1px solid {border_color};">
-        <span class="tag {tag_class}">{agent_name}</span>
-        <div class="card-title">Live Telemetry Feed</div>
-        <div class="card-desc">
-            <ul class="fact-list">
-                {top_html}
-            </ul>
-            {archive_section}
-        </div>
-        <div class="status-text" style="color:{border_color};">>> DIRECTIVE: {directive}</div>
-    </div>
-    """
+    archive_section = f'<details class="archive-details"><summary class="archive-summary">[+] DECRYPT FULL ARCHIVE ({len(facts[2:])} MORE)</summary><ul class="fact-list archive-list">{archive_html}</ul></details>' if archive_html else ""
+    return f'<div class="feed-card" style="border-top: 1px solid {border_color};"><span class="tag {tag_class}">{agent_name}</span><div class="card-title">Live Telemetry Feed</div><div class="card-desc"><ul class="fact-list">{top_html}</ul>{archive_section}</div><div class="status-text" style="color:{border_color};">>> DIRECTIVE: {directive}</div></div>'
 
 # --- 6. MAIN DASHBOARD ---
 st.markdown("<h1>APEX <span class='neon-text'>NEXUS-1</span></h1>", unsafe_allow_html=True)
@@ -195,18 +181,13 @@ with col_globe:
         marker = dict(size = df['size'], color = df['color'], line_color='white', line_width=1, opacity=1)
     ))
     fig.update_layout(
-        geo = dict(
-            projection_type = 'orthographic', showland = True, landcolor = "#1e293b",     
-            showocean = True, oceancolor = "#064273", showcountries=True, countrycolor="rgba(255,255,255,0.2)",
-            bgcolor="rgba(0,0,0,0)"
-        ), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", margin=dict(l=0, r=0, t=0, b=0), height=600 
+        geo = dict(projection_type='orthographic', showland=True, landcolor="#1e293b", showocean=True, oceancolor="#064273", showcountries=True, countrycolor="rgba(255,255,255,0.2)", bgcolor="rgba(0,0,0,0)"),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", margin=dict(l=0, r=0, t=0, b=0), height=600 
     )
     st.plotly_chart(fig, use_container_width=True)
 
 with col_feed:
     st.markdown(f"<h4 style='color: #8892b0; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>{cfg['ui_title']}</h4>", unsafe_allow_html=True)
-    
-    # Injecting the dynamic HTML cards for all 3 agents
     st.markdown(create_card_html(eco_facts, cfg['ui_eco'], "tag-eco", "#00ff9d", "EVALUATE CAPITAL MOVEMENT."), unsafe_allow_html=True)
     st.markdown(create_card_html(tech_facts, cfg['ui_tech'], "tag-tech", "#00e5ff", "IDENTIFY TOOLS TO UPGRADE ARSENAL."), unsafe_allow_html=True)
     st.markdown(create_card_html(edu_facts, cfg['ui_edu'], "tag-edu", "#ffc400", "ALIGN LEARNING WITH DEMAND."), unsafe_allow_html=True)
