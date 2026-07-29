@@ -3,53 +3,30 @@ import pandas as pd
 import plotly.graph_objects as go
 import time
 
-# --- 1. PAGE CONFIGURATION & SYSTEM INITIALIZATION ---
-st.set_page_config(page_title="APEX AI: NEXUS-1", page_icon="🌍", layout="wide", initial_sidebar_state="collapsed")
+# --- 1. PAGE CONFIGURATION (ORACLE AUTO-OPEN) ---
+# FIX: initial_sidebar_state ko "expanded" kar diya hai!
+st.set_page_config(page_title="APEX AI: NEXUS-1", page_icon="🌍", layout="wide", initial_sidebar_state="expanded")
 
 # Initialize Chat History in Session State
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent. Paste any headline, fact, or data from the right feed, and I will provide a deep-dive analysis."}
+        {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent. Paste any headline or data from the right feed, and I will decode the real strategy for you."}
     ]
 
-# --- 2. TERMINAL CSS (Dark Smoked Glass + Glowing Sidebar Button) ---
+# --- 2. TERMINAL CSS (Cleaned up for perfect rendering) ---
 st.markdown("""
     <style>
-    /* 1. CINEMATIC BACKGROUND */
+    /* CINEMATIC BACKGROUND */
     .stApp {
         background: linear-gradient(to bottom, rgba(2, 6, 23, 0.75) 0%, rgba(2, 6, 23, 0.4) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
         background-size: cover;
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
     }
     
-    /* 🚨 ULTIMATE SIDEBAR FIX: GLOWING BUTTON 🚨 */
-    header { visibility: visible !important; background: transparent !important; }
-    [data-testid="stToolbar"] { visibility: hidden !important; } /* Hides right side menu */
-    
-    /* Make the open button glowing, cyan, and impossible to miss */
-    [data-testid="collapsedControl"] {
-        display: flex !important;
-        visibility: visible !important;
-        background-color: rgba(10, 15, 30, 0.9) !important;
-        border: 1px solid #00e5ff !important;
-        border-radius: 8px !important;
-        margin-top: 15px !important;
-        margin-left: 15px !important;
-        padding: 5px !important;
-        z-index: 999999 !important;
-        box-shadow: 0 0 15px rgba(0, 229, 255, 0.6) !important;
-        transition: 0.3s ease !important;
-    }
-    [data-testid="collapsedControl"]:hover {
-        box-shadow: 0 0 25px rgba(0, 229, 255, 1) !important;
-        transform: scale(1.1) !important;
-    }
-    [data-testid="collapsedControl"] svg {
-        fill: #00e5ff !important; 
-        color: #00e5ff !important;
-        width: 24px !important;
-        height: 24px !important;
-    }
+    /* 🚨 STREAMLIT HEADER CLEANUP (No more hiding bugs) 🚨 */
+    header { background-color: transparent !important; }
+    .stAppDeployButton { display: none !important; }
+    [data-testid="stToolbar"] { display: none !important; }
     
     /* SIDEBAR CUSTOMIZATION (Hacker/Dark Vibe) */
     [data-testid="stSidebar"] {
@@ -93,12 +70,10 @@ st.markdown("""
     }
     .feed-card:hover { transform: translateX(-5px); border-left: 4px solid #ffffff; }
     
-    /* TAGS */
+    /* TAGS & TEXT STYLING */
     .tag-eco { background: rgba(0, 255, 157, 0.15); color: #00ff9d; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(0, 255, 157, 0.4); letter-spacing: 1px;}
     .tag-tech { background: rgba(0, 229, 255, 0.15); color: #00e5ff; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.4); letter-spacing: 1px;}
     .tag-edu { background: rgba(255, 196, 0, 0.15); color: #ffc400; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(255, 196, 0, 0.4); letter-spacing: 1px;}
-    
-    /* TEXT STYLING */
     .card-title { font-size: 1.1rem; font-weight: 700; margin-top: 12px; margin-bottom: 8px; color: #ffffff; line-height: 1.3;}
     .card-desc { color: #cbd5e1; font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px;}
     .status-text { font-family: 'Courier New', monospace; font-size: 0.85rem; font-weight: bold;}
@@ -118,17 +93,15 @@ with st.sidebar:
             
     # Chat Input Logic
     if prompt := st.chat_input("Ask Oracle to decode a headline..."):
-        # Add User Message
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
             
-        # Simulate AI Decoding
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
-            full_response = f"**FORENSIC ANALYSIS INITIATED:** \n\nYou asked about: '{prompt}'. \n\n*Decoding logic...* Based on current global telemetry, this shift indicates a major realignment. Institutions are reallocating capital. **Actionable move:** Focus on upskilling in this specific domain to capture the upcoming trend."
+            full_response = f"**FORENSIC ANALYSIS INITIATED:** \n\nQuery: '{prompt}'. \n\n*Decoding logic...* Based on current global telemetry, this indicates a major realignment. **Actionable move:** Focus on upskilling in this specific domain to capture the trend."
             
-            # Typewriter effect simulation
+            # Hacker Typewriter effect
             typed_text = ""
             for char in full_response:
                 typed_text += char
@@ -136,7 +109,6 @@ with st.sidebar:
                 time.sleep(0.01)
             message_placeholder.markdown(full_response)
             
-        # Add AI Message to state
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
 # --- 4. HEADER & KPI DASHBOARD (MAIN SCREEN) ---
@@ -151,7 +123,6 @@ with m4: st.markdown("<div class='metric-box'><div class='metric-title'>Multi-Ag
 # --- 5. THE COMMAND CENTER (SPLIT LAYOUT) ---
 col_globe, col_feed = st.columns([1.5, 1])
 
-# ---> LEFT WING: THE SOLID 3D OCEAN GLOBE
 with col_globe:
     df = pd.DataFrame([
         {"name": "INDIA", "lat": 28.6139, "lon": 77.2090, "color": "#00e5ff", "size": 12}, 
@@ -184,7 +155,6 @@ with col_globe:
     )
     st.plotly_chart(fig, use_container_width=True)
 
-# ---> RIGHT WING: THE RAW AUTONOMOUS DATA FEED
 with col_feed:
     st.markdown("<h4 style='color: #8892b0; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>📡 LIVE TRUTH TERMINAL (RAW DATA)</h4>", unsafe_allow_html=True)
     
@@ -197,7 +167,6 @@ with col_feed:
             <ul class="fact-list">
                 <li>Top 5 Indian IT firms report 14% drop in traditional entry-level hiring.</li>
                 <li>Simultaneous 22% increase in mid-level AI integration roles.</li>
-                <li>Freelance gig economy payouts grew by 9% globally.</li>
             </ul>
         </div>
         <div class="status-text" style="color:#00ff9d;">>> DATA PATHWAY: OPPORTUNITY IN 'AI INTEGRATION' SKILLS.</div>
@@ -209,29 +178,12 @@ with col_feed:
         <span class="tag-tech">SCIENCE & TECH AGENT</span>
         <div class="card-title">Open-Source LLM Hardware Breakthrough</div>
         <div class="card-desc">
-            Raw Fact Cross-Check (GitHub & Hardware Nodes):
+            Raw Fact Cross-Check:
             <ul class="fact-list">
                 <li>New open-weight AI model successfully runs entirely locally on 16GB RAM laptops.</li>
-                <li>Data privacy compliance for local businesses reaches 100% using local deployment.</li>
-                <li>Average monthly cloud cost reduced by $400 for early-adopter startups.</li>
+                <li>Data privacy compliance for local businesses reaches 100%.</li>
             </ul>
         </div>
         <div class="status-text neon-text">>> DATA PATHWAY: LOCAL AI DEPLOYMENT IS HIGHLY VIABLE.</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="feed-card" style="border-left-color: #ffc400;">
-        <span class="tag-edu">EDUCATION AGENT</span>
-        <div class="card-title">Global Skill Gap Index 2026</div>
-        <div class="card-desc">
-            Verified University & Industry Hiring Data:
-            <ul class="fact-list">
-                <li>Traditional coding degrees show 31% overlap with new automated AI coding tools.</li>
-                <li>Prompt Engineering, System Architecture, and AI-Ethics courses see 400% enrollment spike.</li>
-                <li>Tech recruiters now weighing specific online certs equal to standard diplomas.</li>
-            </ul>
-        </div>
-        <div class="status-text" style="color:#ffc400;">>> DATA PATHWAY: NON-TRADITIONAL SKILL ACQUISITION VALIDATED.</div>
     </div>
     """, unsafe_allow_html=True)
