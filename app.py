@@ -1,14 +1,21 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import time
 
 # --- 1. PAGE CONFIGURATION & SYSTEM INITIALIZATION ---
-st.set_page_config(page_title="APEX AI: NEXUS-1", page_icon="🌍", layout="wide")
+st.set_page_config(page_title="APEX AI: NEXUS-1", page_icon="🌍", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 2. TERMINAL CSS (The Ultimate Dark Smoked Glass & Cinematic Layout) ---
+# Initialize Chat History in Session State
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent. Paste any headline, fact, or data from the right feed, and I will provide a deep-dive analysis."}
+    ]
+
+# --- 2. TERMINAL CSS (Dark Smoked Glass + Sidebar Styling) ---
 st.markdown("""
     <style>
-    /* 1. CINEMATIC BACKGROUND WITH READABILITY TINT */
+    /* CINEMATIC BACKGROUND */
     .stApp {
         background: linear-gradient(to bottom, rgba(2, 6, 23, 0.75) 0%, rgba(2, 6, 23, 0.4) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
         background-size: cover;
@@ -16,11 +23,18 @@ st.markdown("""
     }
     header {visibility: hidden;}
     
-    /* 2. TYPOGRAPHY & BRANDING */
+    /* SIDEBAR CUSTOMIZATION (Hacker/Dark Vibe) */
+    [data-testid="stSidebar"] {
+        background-color: rgba(10, 15, 30, 0.95) !important;
+        border-right: 1px solid rgba(0, 229, 255, 0.3);
+    }
+    .sidebar-title { color: #00e5ff; font-weight: 900; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 20px; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);}
+    
+    /* TYPOGRAPHY & BRANDING */
     h1 { font-weight: 900; font-size: 2.8rem; letter-spacing: -1px; margin-bottom: 0; color: #ffffff;}
     .neon-text { color: #00e5ff; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); }
     
-    /* 3. TOP KPI METRIC BOXES */
+    /* TOP KPI METRIC BOXES */
     .metric-box {
         background: rgba(15, 23, 42, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -34,9 +48,9 @@ st.markdown("""
     .metric-title { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;}
     .metric-value { font-size: 1.6rem; color: #00e5ff; font-weight: 900; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);}
 
-    /* 4. THE DARK SMOKED GLASS FEED CARDS */
+    /* THE DARK SMOKED GLASS FEED CARDS */
     .feed-card {
-        background: rgba(10, 15, 30, 0.75); /* Dark smoked glass for perfect readability */
+        background: rgba(10, 15, 30, 0.75); 
         backdrop-filter: blur(20px); 
         -webkit-backdrop-filter: blur(20px);
         border-left: 4px solid #00e5ff; 
@@ -51,22 +65,53 @@ st.markdown("""
     }
     .feed-card:hover { transform: translateX(-5px); border-left: 4px solid #ffffff; }
     
-    /* 5. MULTI-AGENT TAGS (Color Coded Psychology) */
+    /* TAGS */
     .tag-eco { background: rgba(0, 255, 157, 0.15); color: #00ff9d; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(0, 255, 157, 0.4); letter-spacing: 1px;}
     .tag-tech { background: rgba(0, 229, 255, 0.15); color: #00e5ff; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.4); letter-spacing: 1px;}
     .tag-edu { background: rgba(255, 196, 0, 0.15); color: #ffc400; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; border: 1px solid rgba(255, 196, 0, 0.4); letter-spacing: 1px;}
     
-    /* 6. RAW DATA TEXT STYLING */
+    /* TEXT STYLING */
     .card-title { font-size: 1.1rem; font-weight: 700; margin-top: 12px; margin-bottom: 8px; color: #ffffff; line-height: 1.3;}
     .card-desc { color: #cbd5e1; font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px;}
     .status-text { font-family: 'Courier New', monospace; font-size: 0.85rem; font-weight: bold;}
-    
     ul.fact-list { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; color: #e2e8f0; font-size: 0.85rem;}
     ul.fact-list li { margin-bottom: 4px; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. HEADER & KPI DASHBOARD (TOP ROW) ---
+# --- 3. THE APEX ORACLE CHATBOT (SIDEBAR) ---
+with st.sidebar:
+    st.markdown("<div class='sidebar-title'>💬 APEX ORACLE</div>", unsafe_allow_html=True)
+    
+    # Display Chat History
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+            
+    # Chat Input Logic
+    if prompt := st.chat_input("Ask Oracle to decode a headline..."):
+        # Add User Message
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+            
+        # Simulate AI Decoding (This is where your LLM API will go later)
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
+            full_response = f"**FORENSIC ANALYSIS INITIATED:** \n\nYou asked about: '{prompt}'. \n\n*Decoding logic...* Based on current global telemetry, this shift indicates a major realignment. Institutions are reallocating capital. **Actionable move:** Focus on upskilling in this specific domain to capture the upcoming trend."
+            
+            # Typewriter effect simulation
+            typed_text = ""
+            for char in full_response:
+                typed_text += char
+                message_placeholder.markdown(typed_text + "▌")
+                time.sleep(0.01)
+            message_placeholder.markdown(full_response)
+            
+        # Add AI Message to state
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+# --- 4. HEADER & KPI DASHBOARD (MAIN SCREEN) ---
 st.markdown("<h1>APEX <span class='neon-text'>NEXUS-1</span></h1>", unsafe_allow_html=True)
 
 m1, m2, m3, m4 = st.columns(4)
@@ -75,7 +120,7 @@ with m2: st.markdown("<div class='metric-box'><div class='metric-title'>Global V
 with m3: st.markdown("<div class='metric-box'><div class='metric-title'>AI Skill Demand Shift</div><div style='color:#00ff9d;' class='metric-value'>+18%</div></div>", unsafe_allow_html=True)
 with m4: st.markdown("<div class='metric-box'><div class='metric-title'>Multi-Agent Status</div><div class='metric-value'>ONLINE & RAW</div></div>", unsafe_allow_html=True)
 
-# --- 4. THE COMMAND CENTER (SPLIT LAYOUT) ---
+# --- 5. THE COMMAND CENTER (SPLIT LAYOUT) ---
 col_globe, col_feed = st.columns([1.5, 1])
 
 # ---> LEFT WING: THE SOLID 3D OCEAN GLOBE
@@ -115,7 +160,6 @@ with col_globe:
 with col_feed:
     st.markdown("<h4 style='color: #8892b0; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>📡 LIVE TRUTH TERMINAL (RAW DATA)</h4>", unsafe_allow_html=True)
     
-    # 1. Economic Agent
     st.markdown("""
     <div class="feed-card" style="border-left-color: #00ff9d;">
         <span class="tag-eco">ECONOMIC & MARKET AGENT</span>
@@ -132,7 +176,6 @@ with col_feed:
     </div>
     """, unsafe_allow_html=True)
 
-    # 2. Science & Tech Agent
     st.markdown("""
     <div class="feed-card" style="border-left-color: #00e5ff;">
         <span class="tag-tech">SCIENCE & TECH AGENT</span>
@@ -149,7 +192,6 @@ with col_feed:
     </div>
     """, unsafe_allow_html=True)
     
-    # 3. Education Agent
     st.markdown("""
     <div class="feed-card" style="border-left-color: #ffc400;">
         <span class="tag-edu">EDUCATION AGENT</span>
