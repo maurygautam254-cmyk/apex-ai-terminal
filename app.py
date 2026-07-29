@@ -12,16 +12,19 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent. Paste any headline, fact, or data from the right feed, and I will provide a deep-dive analysis."}
     ]
 
-# --- 2. TERMINAL CSS (Dark Smoked Glass + Sidebar Styling) ---
+# --- 2. TERMINAL CSS (Sidebar Fix Included) ---
 st.markdown("""
     <style>
-    /* CINEMATIC BACKGROUND */
+    /* 1. CINEMATIC BACKGROUND */
     .stApp {
         background: linear-gradient(to bottom, rgba(2, 6, 23, 0.75) 0%, rgba(2, 6, 23, 0.4) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed;
         background-size: cover;
         font-family: 'Inter', 'Helvetica Neue', sans-serif;
     }
-    header {visibility: hidden;}
+    
+    /* THE FIX: Keep sidebar arrow visible, but hide Streamlit's default right-side menu */
+    header {background-color: transparent !important;}
+    [data-testid="stToolbar"] {visibility: hidden !important;}
     
     /* SIDEBAR CUSTOMIZATION (Hacker/Dark Vibe) */
     [data-testid="stSidebar"] {
@@ -31,7 +34,7 @@ st.markdown("""
     .sidebar-title { color: #00e5ff; font-weight: 900; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 20px; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);}
     
     /* TYPOGRAPHY & BRANDING */
-    h1 { font-weight: 900; font-size: 2.8rem; letter-spacing: -1px; margin-bottom: 0; color: #ffffff;}
+    h1 { font-weight: 900; font-size: 2.8rem; letter-spacing: -1px; margin-bottom: 0; color: #ffffff; margin-top: -30px;}
     .neon-text { color: #00e5ff; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); }
     
     /* TOP KPI METRIC BOXES */
@@ -95,7 +98,7 @@ with st.sidebar:
         with st.chat_message("user"):
             st.markdown(prompt)
             
-        # Simulate AI Decoding (This is where your LLM API will go later)
+        # Simulate AI Decoding
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
             full_response = f"**FORENSIC ANALYSIS INITIATED:** \n\nYou asked about: '{prompt}'. \n\n*Decoding logic...* Based on current global telemetry, this shift indicates a major realignment. Institutions are reallocating capital. **Actionable move:** Focus on upskilling in this specific domain to capture the upcoming trend."
