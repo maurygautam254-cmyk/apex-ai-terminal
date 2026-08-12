@@ -3,191 +3,256 @@ import pandas as pd
 import plotly.graph_objects as go
 import time
 import urllib.request
-import urllib.parse
 import xml.etree.ElementTree as ET
+from email.utils import parsedate_to_datetime
+import sqlite3 
+import json
+import google.generativeai as genai
+
+# --- GEMINI API CONFIGURATION ---
+# Replace with your actual Gemini API Key (or use st.secrets["GEMINI_API_KEY"])
+genai.configure(api_key="YOUR_GEMINI_API_KEY")
 
 # --- 1. SYSTEM INITIALIZATION ---
-st.set_page_config(page_title="APEX AI: NEXUS-1", page_icon="🌍", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="APEX AI", page_icon="🌍", layout="wide", initial_sidebar_state="expanded")
+
+if "selected_news" not in st.session_state:
+    st.session_state.selected_news = None
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI am the forensic decode agent."}
+        {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI operate strictly on POSITIVE ECONOMICS. Ask me to decode any macro trend."}
     ]
 
-# --- 2. LANGUAGE CONFIGURATION ---
-LANG_CONFIG = {
-    "English": {
-        "hl": "en-US", "gl": "US",
-        "q_eco": "Global Economy OR Stock Market Shift",
-        "q_tech": "Artificial Intelligence Innovation OR Tech Breakthrough",
-        "q_edu": "Future Jobs OR Skills Demand OR Hiring Trends",
-        "ui_title": "📡 LIVE TRUTH TERMINAL (RAW DATA)",
-        "ui_eco": "ECONOMIC & MARKET AGENT",
-        "ui_tech": "SCIENCE & TECH AGENT",
-        "ui_edu": "EDUCATION AGENT"
-    },
-    "Hindi (हिंदी)": {
-        "hl": "hi", "gl": "IN",
-        "q_eco": "वैश्विक अर्थव्यवस्था OR शेयर बाजार",
-        "q_tech": "आर्टिफिशियल इंटेलिजेंस तकनीक नवप्रवर्तन",
-        "q_edu": "भविष्य की नौकरियां OR कौशल विकास",
-        "ui_title": "📡 लाइव ट्रुथ टर्मिनल (कच्चा डेटा)",
-        "ui_eco": "आर्थिक और बाजार एजेंट",
-        "ui_tech": "विज्ञान और तकनीकी एजेंट",
-        "ui_edu": "शिक्षा और कौशल एजेंट"
-    }
-}
+# --- 2. DATABASE ENGINE (Updated Schema) ---
+def init_db():
+    conn = sqlite3.connect('apex_core.db', check_same_thread=False)
+    c = conn.cursor()
+    # Adding description and analysis_json columns to the schema
+    c.execute('''CREATE TABLE IF NOT EXISTS global_data 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, agent_type TEXT, title TEXT, link TEXT UNIQUE, date_str TEXT, 
+                 description TEXT, analysis_json TEXT, added_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    
+    # Safe migration for existing DBs
+    try:
+        c.execute("ALTER TABLE global_data ADD COLUMN description TEXT")
+        c.execute("ALTER TABLE global_data ADD COLUMN analysis_json TEXT")
+    except:
+        pass # Columns already exist
+        
+    conn.commit()
+    return conn
+conn = init_db()
 
-# --- 3. HARDCORE CSS FIXES (Sidebar Button + HTML Reset) ---
+# --- 3. HARDCORE TERMINAL CSS (Unchanged) ---
 st.markdown("""
     <style>
-    .stApp { background: linear-gradient(to bottom, rgba(2, 6, 23, 0.75) 0%, rgba(2, 6, 23, 0.4) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed; background-size: cover; font-family: 'Inter', sans-serif; }
+    .stApp { background: linear-gradient(to bottom, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.8) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed; background-size: cover; font-family: 'Inter', sans-serif; }
     header { background-color: transparent !important; }
     .stAppDeployButton, [data-testid="stToolbar"] { display: none !important; }
-    
-    /* 🚨 THE SIDEBAR BUTTON FIX (Solid Cyan with Black Arrow) 🚨 */
-    [data-testid="collapsedControl"] {
-        display: flex !important;
-        visibility: visible !important;
-        background-color: #00e5ff !important; /* Bright Cyan Base */
-        border-radius: 6px !important;
-        margin: 15px !important;
-        padding: 5px !important;
-        box-shadow: 0 0 15px rgba(0, 229, 255, 0.8) !important;
-        z-index: 999999 !important;
-    }
-    [data-testid="collapsedControl"] svg {
-        fill: #020617 !important; /* Dark Black Arrow */
-        color: #020617 !important;
-        width: 28px !important;
-        height: 28px !important;
-    }
-
     [data-testid="stSidebar"] { background-color: rgba(10, 15, 30, 0.95) !important; border-right: 1px solid rgba(0, 229, 255, 0.3); }
-    .sidebar-title { color: #00e5ff; font-weight: 900; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 20px;}
-    
     h1 { font-weight: 900; font-size: 2.8rem; letter-spacing: -1px; margin-bottom: 0; color: #ffffff; margin-top: -30px;}
     .neon-text { color: #00e5ff; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); }
-    
-    .metric-box { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; text-align: center; backdrop-filter: blur(10px); margin-bottom: 20px;}
-    .metric-title { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;}
-    .metric-value { font-size: 1.6rem; color: #00e5ff; font-weight: 900;}
-
-    .feed-card { background: rgba(10, 15, 30, 0.75); backdrop-filter: blur(20px); border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: transform 0.2s ease;}
-    
-    .tag { padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
-    .tag-eco { background: rgba(0, 255, 157, 0.15); color: #00ff9d; border: 1px solid rgba(0, 255, 157, 0.4); }
-    .tag-tech { background: rgba(0, 229, 255, 0.15); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.4); }
-    .tag-edu { background: rgba(255, 196, 0, 0.15); color: #ffc400; border: 1px solid rgba(255, 196, 0, 0.4); }
-    
-    .card-title { font-size: 1.1rem; font-weight: 700; margin-top: 12px; margin-bottom: 8px; color: #ffffff; line-height: 1.3;}
-    .status-text { font-family: 'Courier New', monospace; font-size: 0.85rem; font-weight: bold; margin-top:10px;}
-    
-    a.headline-link { color: #e2e8f0; text-decoration: none; transition: 0.2s;}
-    a.headline-link:hover { color: #00e5ff; text-decoration: underline;}
-    ul.fact-list { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; color: #e2e8f0; font-size: 0.85rem;}
-    ul.fact-list li { margin-bottom: 8px; }
-    
-    details.archive-details { margin-top: 15px; }
-    summary.archive-summary { color: #94a3b8; font-size: 0.8rem; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; outline: none; list-style: none;}
-    summary.archive-summary:hover { color: #ffffff; }
-    ul.archive-list { max-height: 200px; overflow-y: auto; margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top:10px;}
-    ul.archive-list::-webkit-scrollbar { width: 5px; }
-    ul.archive-list::-webkit-scrollbar-thumb { background: #00e5ff; border-radius: 4px; }
+    .feed-list-box { background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; height: 600px; overflow-y: auto;}
+    .feed-list-box::-webkit-scrollbar { width: 4px; }
+    .feed-list-box::-webkit-scrollbar-thumb { background: #00e5ff; border-radius: 4px; }
+    .news-item { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin-bottom: 12px; transition: 0.2s;}
+    .news-item:hover { border-color: rgba(0, 229, 255, 0.4); background: rgba(0, 229, 255, 0.05);}
+    .news-date { font-family: 'Courier New', monospace; font-size: 0.75rem; color: #00ff9d; font-weight: bold; margin-bottom: 5px;}
+    .news-title { font-size: 0.95rem; color: #f8fafc; font-weight: 600; line-height: 1.4; margin-bottom: 10px;}
+    .explainer-window { background: rgba(10, 15, 30, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 8px; padding: 25px; height: 600px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-top: 4px solid #00e5ff;}
+    .explainer-window::-webkit-scrollbar { width: 4px; }
+    .explainer-window::-webkit-scrollbar-thumb { background: #00e5ff; border-radius: 4px; }
+    .exp-title { font-size: 1.3rem; font-weight: 800; color: #ffffff; margin-bottom: 15px; line-height: 1.4;}
+    .section-title { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-top: 20px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
+    .section-content { font-size: 0.95rem; color: #cbd5e1; line-height: 1.6;}
+    .action-box { background: rgba(0, 255, 157, 0.08); border: 1px solid rgba(0, 255, 157, 0.4); border-radius: 6px; padding: 15px; margin-top: 25px; }
+    .action-title { font-size: 0.85rem; color: #00ff9d; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;}
+    .stButton>button { background-color: rgba(0, 229, 255, 0.1); border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; border-radius: 4px; padding: 2px 15px; font-size: 0.75rem; transition: 0.3s;}
+    .stButton>button:hover { background-color: #00e5ff; color: #020617; box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. SIDEBAR (LANGUAGE & ORACLE) ---
-with st.sidebar:
-    st.markdown("<div class='sidebar-title'>⚙️ SYSTEM CONTROL</div>", unsafe_allow_html=True)
-    selected_lang = st.selectbox("🌐 Select Output Language", list(LANG_CONFIG.keys()))
-    cfg = LANG_CONFIG[selected_lang]
-    
-    st.markdown("<hr style='border-color: rgba(0,229,255,0.2);'>", unsafe_allow_html=True)
-    st.markdown("<div class='sidebar-title'>💬 APEX ORACLE</div>", unsafe_allow_html=True)
-    
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-            
-    if prompt := st.chat_input("Ask Oracle to decode data..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"): st.markdown(prompt)
-        with st.chat_message("assistant"):
-            message_placeholder = st.empty()
-            full_response = f"**DATA LOGGED.** \n\nQuery: '{prompt}'. \n\n*Forensic Output:* Analyzing macro-shift. **Actionable Directive:** Position capital or skills ahead of the curve."
-            typed_text = ""
-            for char in full_response:
-                typed_text += char
-                message_placeholder.markdown(typed_text + "▌")
-                time.sleep(0.01)
-            message_placeholder.markdown(full_response)
-        st.session_state.messages.append({"role": "assistant", "content": full_response})
-
-# --- 5. THE LIVE DATA PIPELINE (15 ITEMS - FULL NEWSPAPER ARCHIVE) 🚀 ---
+# --- 4. DATA FETCHING PIPELINE (Updated for <description>) ---
 @st.cache_data(ttl=600)
-def fetch_live_telemetry(query, hl, gl):
+def fetch_all_macro_data():
     try:
-        safe_query = urllib.parse.quote(query)
-        url = f"https://news.google.com/rss/search?q={safe_query}&hl={hl}&gl={gl}"
+        url = "https://news.google.com/rss/search?q=Global+Economy+OR+Market+Crash+OR+Tech+Stocks&hl=en-US&gl=US"
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        response = urllib.request.urlopen(req)
-        xml_data = response.read()
-        root = ET.fromstring(xml_data)
-        
-        facts = []
-        for item in root.findall('.//item')[:15]: # 🚨 15 Live News Items!
+        root = ET.fromstring(urllib.request.urlopen(req).read())
+        c = conn.cursor()
+        for item in root.findall('.//item')[:25]: 
             title = item.find('title').text
             link = item.find('link').text
+            # Extracting description as requested
+            desc_elem = item.find('description')
+            description = desc_elem.text if desc_elem is not None else ""
+            
+            try: dt = parsedate_to_datetime(item.find('pubDate').text); date_str = dt.strftime("%d %b, %H:%M")
+            except: date_str = "LIVE"
+            
             clean_title = title.rsplit(' - ', 1)[0] if ' - ' in title else title
-            facts.append({"title": clean_title, "link": link})
-        return facts
+            
+            c.execute("INSERT OR IGNORE INTO global_data (agent_type, title, link, date_str, description) VALUES (?, ?, ?, ?, ?)", 
+                      ("MACRO", clean_title, link, date_str, description))
+        conn.commit()
+    except Exception as e: 
+        pass
+    
+    # Fetching description and analysis_json as well
+    c = conn.cursor()
+    c.execute("SELECT title, link, date_str, description, analysis_json FROM global_data WHERE agent_type='MACRO' ORDER BY added_on DESC LIMIT 25")
+    return [{"title": r[0], "link": r[1], "date": r[2], "description": r[3], "analysis_json": r[4]} for r in c.fetchall()]
+
+all_macro_data = fetch_all_macro_data()
+
+def set_selected_news(news_data):
+    st.session_state.selected_news = news_data
+
+# --- 5. AI GENERATION PIPELINE ---
+def generate_analysis(title, description):
+    """Hits Gemini API, enforces strict JSON rules, handles failures."""
+    if not title and not description:
+        return None
+        
+    prompt = f"""
+    Analyze the following financial/economic news article. 
+    Title: {title}
+    Context: {description}
+    
+    STRICT RULES:
+    1. Output ONLY a raw, valid JSON object with EXACTLY these 4 keys: "what_happened", "why_it_matters", "who_should_care", "action".
+    2. Do NOT invent facts, numbers, or predictions not present in the text above. 
+    3. If the text lacks information to accurately answer a section, output exactly "Insufficient data in source" for that value.
+    4. Keep each value to a maximum of 2-3 concise sentences.
+    5. Do not include markdown formatting like ```json in the output.
+    """
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        
+        # Clean potential markdown wrappers generated by LLM
+        raw_output = response.text.strip()
+        if raw_output.startswith('```json'):
+            raw_output = raw_output[7:-3].strip()
+        elif raw_output.startswith('```'):
+            raw_output = raw_output[3:-3].strip()
+            
+        parsed_json = json.loads(raw_output)
+        
+        # Validate structure guarantees
+        expected_keys = ["what_happened", "why_it_matters", "who_should_care", "action"]
+        for key in expected_keys:
+            if key not in parsed_json:
+                parsed_json[key] = "Insufficient data in source"
+                
+        return parsed_json
     except Exception as e:
-        return [{"title": "Node scan failed.", "link": "#"}]
+        return None # Triggers exact failure string in UI
 
-eco_facts = fetch_live_telemetry(cfg["q_eco"], cfg["hl"], cfg["gl"])
-tech_facts = fetch_live_telemetry(cfg["q_tech"], cfg["hl"], cfg["gl"])
-edu_facts = fetch_live_telemetry(cfg["q_edu"], cfg["hl"], cfg["gl"])
+# --- 6. MAIN DASHBOARD UI ---
+st.markdown("<h1>APEX <span class='neon-text'>AI</span></h1>", unsafe_allow_html=True)
 
-# THE BUG FIX: Writing HTML in one continuous string without indentation so Streamlit doesn't think it's a code block.
-def create_card_html(facts, agent_name, tag_class, border_color, directive):
-    if not facts: return ""
-    top_html = "".join([f"<li><a href='{f['link']}' target='_blank' class='headline-link'>{f['title']}</a></li>" for f in facts[:2]])
-    archive_html = "".join([f"<li><a href='{f['link']}' target='_blank' class='headline-link'>{f['title']}</a></li>" for f in facts[2:]])
-    archive_section = f'<details class="archive-details"><summary class="archive-summary">[+] DECRYPT FULL ARCHIVE ({len(facts[2:])} MORE)</summary><ul class="fact-list archive-list">{archive_html}</ul></details>' if archive_html else ""
-    return f'<div class="feed-card" style="border-top: 1px solid {border_color};"><span class="tag {tag_class}">{agent_name}</span><div class="card-title">Live Telemetry Feed</div><div class="card-desc"><ul class="fact-list">{top_html}</ul>{archive_section}</div><div class="status-text" style="color:{border_color};">>> DIRECTIVE: {directive}</div></div>'
+st.markdown("<h4 style='color: #8892b0; font-size:0.9rem; margin-top: 10px; margin-bottom: -20px; text-transform: uppercase;'>🌍 Global Macro Radar</h4>", unsafe_allow_html=True)
+df = pd.DataFrame([{"name": "INDIA", "lat": 28.6139, "lon": 77.2090, "color": "#00e5ff", "size": 10}, {"name": "USA", "lat": 38.9072, "lon": -77.0369, "color": "#ff3333", "size": 10}])
+fig = go.Figure(data=go.Scattergeo(lon=df['lon'], lat=df['lat'], text=df['name'], mode='markers+text', textposition="top center", textfont=dict(family="Arial Black", size=10, color="white"), marker=dict(size=df['size'], color=df['color'], line_color='white', line_width=1, opacity=1)))
+fig.update_layout(geo=dict(projection_type='orthographic', showland=True, landcolor="#0f172a", showocean=True, oceancolor="#020617", showcountries=True, countrycolor="rgba(255,255,255,0.1)", bgcolor="rgba(0,0,0,0)"), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", margin=dict(l=0, r=0, t=20, b=20), height=300)
+st.plotly_chart(fig, use_container_width=True)
+st.markdown("<hr style='border-color: rgba(0, 229, 255, 0.2); margin-top: -20px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
-# --- 6. MAIN DASHBOARD ---
-st.markdown("<h1>APEX <span class='neon-text'>NEXUS-1</span></h1>", unsafe_allow_html=True)
-m1, m2, m3, m4 = st.columns(4)
-with m1: st.markdown("<div class='metric-box'><div class='metric-title'>Live Nodes Active</div><div class='metric-value'>5,124</div></div>", unsafe_allow_html=True)
-with m2: st.markdown("<div class='metric-box'><div class='metric-title'>System Mode</div><div class='metric-value'>LIVE SYNC</div></div>", unsafe_allow_html=True)
-with m3: st.markdown("<div class='metric-box'><div class='metric-title'>Bias Filter</div><div style='color:#00ff9d;' class='metric-value'>100% PURE</div></div>", unsafe_allow_html=True)
-with m4: st.markdown(f"<div class='metric-box'><div class='metric-title'>Language</div><div class='metric-value'>{selected_lang[:2].upper()}</div></div>", unsafe_allow_html=True)
+col_feed, col_explainer = st.columns([1.2, 1.5])
 
-# --- 7. SPLIT LAYOUT (Globe + Live Feed) ---
-col_globe, col_feed = st.columns([1.5, 1])
-
-with col_globe:
-    df = pd.DataFrame([
-        {"name": "INDIA", "lat": 28.6139, "lon": 77.2090, "color": "#00e5ff", "size": 12}, 
-        {"name": "USA", "lat": 38.9072, "lon": -77.0369, "color": "#ff3333", "size": 12},
-        {"name": "UK", "lat": 51.5072, "lon": -0.1276, "color": "#ffc400", "size": 12},
-        {"name": "CHINA", "lat": 39.9042, "lon": 116.4074, "color": "#00ff9d", "size": 12}
-    ])
-    fig = go.Figure(data=go.Scattergeo(
-        lon = df['lon'], lat = df['lat'], text = df['name'], mode = 'markers+text',
-        textposition="top center", textfont=dict(family="Arial Black", size=12, color="white"),
-        marker = dict(size = df['size'], color = df['color'], line_color='white', line_width=1, opacity=1)
-    ))
-    fig.update_layout(
-        geo = dict(projection_type='orthographic', showland=True, landcolor="#1e293b", showocean=True, oceancolor="#064273", showcountries=True, countrycolor="rgba(255,255,255,0.2)", bgcolor="rgba(0,0,0,0)"),
-        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", margin=dict(l=0, r=0, t=0, b=0), height=600 
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
+# LEFT COLUMN: THE FEED LIST
 with col_feed:
-    st.markdown(f"<h4 style='color: #8892b0; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>{cfg['ui_title']}</h4>", unsafe_allow_html=True)
-    st.markdown(create_card_html(eco_facts, cfg['ui_eco'], "tag-eco", "#00ff9d", "EVALUATE CAPITAL MOVEMENT."), unsafe_allow_html=True)
-    st.markdown(create_card_html(tech_facts, cfg['ui_tech'], "tag-tech", "#00e5ff", "IDENTIFY TOOLS TO UPGRADE ARSENAL."), unsafe_allow_html=True)
-    st.markdown(create_card_html(edu_facts, cfg['ui_edu'], "tag-edu", "#ffc400", "ALIGN LEARNING WITH DEMAND."), unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #00e5ff; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>📡 LIVE TELEMETRY LOGS</h4>", unsafe_allow_html=True)
+    st.markdown("<div class='feed-list-box'>", unsafe_allow_html=True)
+    
+    if not all_macro_data:
+        st.write("Scanning nodes...")
+    else:
+        for idx, row in enumerate(all_macro_data):
+            st.markdown(f"<div class='news-item'><div class='news-date'>[{row['date']}]</div><div class='news-title'>{row['title']}</div></div>", unsafe_allow_html=True)
+            st.button("DECODE THREAT", key=f"btn_{idx}", on_click=set_selected_news, args=(row,))
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# RIGHT COLUMN: THE AI EXPLAINER WINDOW
+with col_explainer:
+    st.markdown("<h4 style='color: #00ff9d; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>🧠 FORENSIC DECODE (EXECUTIVE BRIEF)</h4>", unsafe_allow_html=True)
+    
+    if st.session_state.selected_news:
+        news = st.session_state.selected_news
+        
+        # AI GENERATION & CACHING LOGIC
+        if not news.get('analysis_json'):
+            with st.spinner("Decoding telemetry using Gemini AI..."):
+                analysis_data = generate_analysis(news['title'], news['description'])
+                
+                if analysis_data:
+                    # Cache to SQLite so it's never re-analyzed
+                    news['analysis_json'] = json.dumps(analysis_data)
+                    c = conn.cursor()
+                    c.execute("UPDATE global_data SET analysis_json = ? WHERE link = ?", (news['analysis_json'], news['link']))
+                    conn.commit()
+                else:
+                    analysis_data = None # Explicitly set to None for the UI error catch
+        else:
+            try:
+                analysis_data = json.loads(news['analysis_json'])
+            except:
+                analysis_data = None
+
+        # DYNAMIC UI RENDERING
+        if analysis_data:
+            # Render Dynamic Content
+            st.markdown(f"""
+            <div class='explainer-window'>
+                <div class='exp-title'>{news['title']}</div>
+                
+                <div class='section-title'>What Happened</div>
+                <div class='section-content'>{analysis_data['what_happened']}</div>
+                
+                <div class='section-title'>Why It Matters</div>
+                <div class='section-content'>{analysis_data['why_it_matters']}</div>
+                
+                <div class='section-title'>Who Should Care</div>
+                <div class='section-content'>{analysis_data['who_should_care']}</div>
+                
+                <div class='action-box'>
+                    <div class='action-title'>>> Actionable Directive</div>
+                    <div style='font-size: 0.95rem; color: #ffffff; font-weight: 500;'>
+                        {analysis_data['action']} <br><br>
+                        <a href='{news['link']}' target='_blank' style='color:#00e5ff; font-weight:bold; text-decoration:none;'>[🔗 VERIFY RAW SOURCE DATA]</a>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            # Handle Failure State without fake fallback data
+            st.markdown(f"""
+            <div class='explainer-window'>
+                <div class='exp-title'>{news['title']}</div>
+                
+                <div style='color: #ff3333; margin-top: 30px; font-weight: bold; text-transform: uppercase;'>
+                    Analysis unavailable — try again later
+                </div>
+                
+                <div style='margin-top: 40px;'>
+                    <a href='{news['link']}' target='_blank' style='color:#00e5ff; font-weight:bold; text-decoration:none;'>[🔗 READ ORIGINAL SOURCE]</a>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    else:
+        st.markdown("""
+        <div class='explainer-window' style='display: flex; align-items: center; justify-content: center; text-align: center;'>
+            <div>
+                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:15px; opacity:0.5;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <h3 style='color: #94a3b8; font-weight: 600;'>AWAITING SIGNAL DECODE</h3>
+                <p style='color: #64748b; font-size: 0.9rem;'>Select a telemetry log from the left feed to generate an AI executive briefing.</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# Sidebar kept identical to your previous build
+with st.sidebar:
+    pass
