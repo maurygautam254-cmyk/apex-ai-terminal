@@ -9,9 +9,10 @@ import sqlite3
 import json
 import google.generativeai as genai
 
-# --- GEMINI API CONFIGURATION ---
-# Replace with your actual Gemini API Key (or use st.secrets["GEMINI_API_KEY"])
-genai.configure(api_key="YOUR_GEMINI_API_KEY")
+# --- GEMINI API CONFIGURATION (दिमाग की चाबी) ---
+# 🚨 ध्यान दें: नीचे वाले "YOUR_GEMINI_API_KEY" को हटाकर अपनी असली API Key डालें 🚨
+genai.configure(api_key="# --- GEMINI API CONFIGURATION ---
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])")
 
 # --- 1. SYSTEM INITIALIZATION ---
 st.set_page_config(page_title="APEX AI", page_icon="🌍", layout="wide", initial_sidebar_state="expanded")
@@ -24,27 +25,23 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "⚡ APEX ORACLE ONLINE. \n\nI operate strictly on POSITIVE ECONOMICS. Ask me to decode any macro trend."}
     ]
 
-# --- 2. DATABASE ENGINE (Updated Schema) ---
+# --- 2. DATABASE ENGINE (मेमोरी) ---
 def init_db():
     conn = sqlite3.connect('apex_core.db', check_same_thread=False)
     c = conn.cursor()
-    # Adding description and analysis_json columns to the schema
     c.execute('''CREATE TABLE IF NOT EXISTS global_data 
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, agent_type TEXT, title TEXT, link TEXT UNIQUE, date_str TEXT, 
                  description TEXT, analysis_json TEXT, added_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    
-    # Safe migration for existing DBs
     try:
         c.execute("ALTER TABLE global_data ADD COLUMN description TEXT")
         c.execute("ALTER TABLE global_data ADD COLUMN analysis_json TEXT")
     except:
-        pass # Columns already exist
-        
+        pass 
     conn.commit()
     return conn
 conn = init_db()
 
-# --- 3. HARDCORE TERMINAL CSS (Unchanged) ---
+# --- 3. HARDCORE TERMINAL CSS (डिज़ाइन) ---
 st.markdown("""
     <style>
     .stApp { background: linear-gradient(to bottom, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.8) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center fixed; background-size: cover; font-family: 'Inter', sans-serif; }
@@ -73,7 +70,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. DATA FETCHING PIPELINE (Updated for <description>) ---
+# --- 4. DATA FETCHING PIPELINE ---
 @st.cache_data(ttl=600)
 def fetch_all_macro_data():
     try:
@@ -84,22 +81,17 @@ def fetch_all_macro_data():
         for item in root.findall('.//item')[:25]: 
             title = item.find('title').text
             link = item.find('link').text
-            # Extracting description as requested
             desc_elem = item.find('description')
             description = desc_elem.text if desc_elem is not None else ""
-            
             try: dt = parsedate_to_datetime(item.find('pubDate').text); date_str = dt.strftime("%d %b, %H:%M")
             except: date_str = "LIVE"
-            
             clean_title = title.rsplit(' - ', 1)[0] if ' - ' in title else title
             
             c.execute("INSERT OR IGNORE INTO global_data (agent_type, title, link, date_str, description) VALUES (?, ?, ?, ?, ?)", 
                       ("MACRO", clean_title, link, date_str, description))
         conn.commit()
-    except Exception as e: 
-        pass
+    except: pass
     
-    # Fetching description and analysis_json as well
     c = conn.cursor()
     c.execute("SELECT title, link, date_str, description, analysis_json FROM global_data WHERE agent_type='MACRO' ORDER BY added_on DESC LIMIT 25")
     return [{"title": r[0], "link": r[1], "date": r[2], "description": r[3], "analysis_json": r[4]} for r in c.fetchall()]
@@ -111,49 +103,33 @@ def set_selected_news(news_data):
 
 # --- 5. AI GENERATION PIPELINE ---
 def generate_analysis(title, description):
-    """Hits Gemini API, enforces strict JSON rules, handles failures."""
-    if not title and not description:
-        return None
-        
+    if not title and not description: return None
     prompt = f"""
-    Analyze the following financial/economic news article. 
-    Title: {title}
-    Context: {description}
-    
+    Analyze the following financial news article. Title: {title} Context: {description}
     STRICT RULES:
     1. Output ONLY a raw, valid JSON object with EXACTLY these 4 keys: "what_happened", "why_it_matters", "who_should_care", "action".
-    2. Do NOT invent facts, numbers, or predictions not present in the text above. 
-    3. If the text lacks information to accurately answer a section, output exactly "Insufficient data in source" for that value.
-    4. Keep each value to a maximum of 2-3 concise sentences.
-    5. Do not include markdown formatting like ```json in the output.
+    2. Do NOT invent facts. 
+    3. Keep each value to a maximum of 2-3 concise sentences.
+    4. Do not include markdown formatting like ```json in the output.
     """
     try:
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
-        
-        # Clean potential markdown wrappers generated by LLM
         raw_output = response.text.strip()
-        if raw_output.startswith('```json'):
-            raw_output = raw_output[7:-3].strip()
-        elif raw_output.startswith('```'):
-            raw_output = raw_output[3:-3].strip()
+        if raw_output.startswith('```json'): raw_output = raw_output[7:-3].strip()
+        elif raw_output.startswith('```'): raw_output = raw_output[3:-3].strip()
             
         parsed_json = json.loads(raw_output)
-        
-        # Validate structure guarantees
         expected_keys = ["what_happened", "why_it_matters", "who_should_care", "action"]
         for key in expected_keys:
-            if key not in parsed_json:
-                parsed_json[key] = "Insufficient data in source"
-                
+            if key not in parsed_json: parsed_json[key] = "Insufficient data in source"
         return parsed_json
-    except Exception as e:
-        return None # Triggers exact failure string in UI
+    except: return None
 
 # --- 6. MAIN DASHBOARD UI ---
 st.markdown("<h1>APEX <span class='neon-text'>AI</span></h1>", unsafe_allow_html=True)
-
 st.markdown("<h4 style='color: #8892b0; font-size:0.9rem; margin-top: 10px; margin-bottom: -20px; text-transform: uppercase;'>🌍 Global Macro Radar</h4>", unsafe_allow_html=True)
+
 df = pd.DataFrame([{"name": "INDIA", "lat": 28.6139, "lon": 77.2090, "color": "#00e5ff", "size": 10}, {"name": "USA", "lat": 38.9072, "lon": -77.0369, "color": "#ff3333", "size": 10}])
 fig = go.Figure(data=go.Scattergeo(lon=df['lon'], lat=df['lat'], text=df['name'], mode='markers+text', textposition="top center", textfont=dict(family="Arial Black", size=10, color="white"), marker=dict(size=df['size'], color=df['color'], line_color='white', line_width=1, opacity=1)))
 fig.update_layout(geo=dict(projection_type='orthographic', showland=True, landcolor="#0f172a", showocean=True, oceancolor="#020617", showcountries=True, countrycolor="rgba(255,255,255,0.1)", bgcolor="rgba(0,0,0,0)"), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", margin=dict(l=0, r=0, t=20, b=20), height=300)
@@ -166,9 +142,7 @@ col_feed, col_explainer = st.columns([1.2, 1.5])
 with col_feed:
     st.markdown("<h4 style='color: #00e5ff; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>📡 LIVE TELEMETRY LOGS</h4>", unsafe_allow_html=True)
     st.markdown("<div class='feed-list-box'>", unsafe_allow_html=True)
-    
-    if not all_macro_data:
-        st.write("Scanning nodes...")
+    if not all_macro_data: st.write("Scanning nodes...")
     else:
         for idx, row in enumerate(all_macro_data):
             st.markdown(f"<div class='news-item'><div class='news-date'>[{row['date']}]</div><div class='news-title'>{row['title']}</div></div>", unsafe_allow_html=True)
@@ -178,45 +152,29 @@ with col_feed:
 # RIGHT COLUMN: THE AI EXPLAINER WINDOW
 with col_explainer:
     st.markdown("<h4 style='color: #00ff9d; font-size:1rem; margin-bottom: 15px; letter-spacing: 1px;'>🧠 FORENSIC DECODE (EXECUTIVE BRIEF)</h4>", unsafe_allow_html=True)
-    
     if st.session_state.selected_news:
         news = st.session_state.selected_news
-        
-        # AI GENERATION & CACHING LOGIC
+        # AI & CACHING LOGIC
         if not news.get('analysis_json'):
             with st.spinner("Decoding telemetry using Gemini AI..."):
                 analysis_data = generate_analysis(news['title'], news['description'])
-                
                 if analysis_data:
-                    # Cache to SQLite so it's never re-analyzed
                     news['analysis_json'] = json.dumps(analysis_data)
                     c = conn.cursor()
                     c.execute("UPDATE global_data SET analysis_json = ? WHERE link = ?", (news['analysis_json'], news['link']))
                     conn.commit()
-                else:
-                    analysis_data = None # Explicitly set to None for the UI error catch
+                else: analysis_data = None 
         else:
-            try:
-                analysis_data = json.loads(news['analysis_json'])
-            except:
-                analysis_data = None
+            try: analysis_data = json.loads(news['analysis_json'])
+            except: analysis_data = None
 
-        # DYNAMIC UI RENDERING
         if analysis_data:
-            # Render Dynamic Content
             st.markdown(f"""
             <div class='explainer-window'>
                 <div class='exp-title'>{news['title']}</div>
-                
-                <div class='section-title'>What Happened</div>
-                <div class='section-content'>{analysis_data['what_happened']}</div>
-                
-                <div class='section-title'>Why It Matters</div>
-                <div class='section-content'>{analysis_data['why_it_matters']}</div>
-                
-                <div class='section-title'>Who Should Care</div>
-                <div class='section-content'>{analysis_data['who_should_care']}</div>
-                
+                <div class='section-title'>What Happened</div><div class='section-content'>{analysis_data['what_happened']}</div>
+                <div class='section-title'>Why It Matters</div><div class='section-content'>{analysis_data['why_it_matters']}</div>
+                <div class='section-title'>Who Should Care</div><div class='section-content'>{analysis_data['who_should_care']}</div>
                 <div class='action-box'>
                     <div class='action-title'>>> Actionable Directive</div>
                     <div style='font-size: 0.95rem; color: #ffffff; font-weight: 500;'>
@@ -227,32 +185,9 @@ with col_explainer:
             </div>
             """, unsafe_allow_html=True)
         else:
-            # Handle Failure State without fake fallback data
-            st.markdown(f"""
-            <div class='explainer-window'>
-                <div class='exp-title'>{news['title']}</div>
-                
-                <div style='color: #ff3333; margin-top: 30px; font-weight: bold; text-transform: uppercase;'>
-                    Analysis unavailable — try again later
-                </div>
-                
-                <div style='margin-top: 40px;'>
-                    <a href='{news['link']}' target='_blank' style='color:#00e5ff; font-weight:bold; text-decoration:none;'>[🔗 READ ORIGINAL SOURCE]</a>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
+            st.markdown(f"<div class='explainer-window'><div class='exp-title'>{news['title']}</div><div style='color: #ff3333; margin-top: 30px; font-weight: bold;'>Analysis unavailable — try again later</div></div>", unsafe_allow_html=True)
     else:
-        st.markdown("""
-        <div class='explainer-window' style='display: flex; align-items: center; justify-content: center; text-align: center;'>
-            <div>
-                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:15px; opacity:0.5;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <h3 style='color: #94a3b8; font-weight: 600;'>AWAITING SIGNAL DECODE</h3>
-                <p style='color: #64748b; font-size: 0.9rem;'>Select a telemetry log from the left feed to generate an AI executive briefing.</p>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<div class='explainer-window' style='display: flex; align-items: center; justify-content: center; text-align: center;'><div><h3 style='color: #94a3b8; font-weight: 600;'>AWAITING SIGNAL DECODE</h3><p style='color: #64748b;'>Select a telemetry log from the left feed to generate an AI executive briefing.</p></div></div>", unsafe_allow_html=True)
 
-# Sidebar kept identical to your previous build
 with st.sidebar:
     pass
