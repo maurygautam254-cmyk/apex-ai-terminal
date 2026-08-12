@@ -10,8 +10,7 @@ import json
 import google.generativeai as genai
 
 # --- GEMINI API CONFIGURATION (दिमाग की चाबी) ---
-# 🚨 ध्यान दें: नीचे वाले "YOUR_GEMINI_API_KEY" को हटाकर अपनी असली API Key डालें 🚨
-genai.configure(api_key="# --- GEMINI API CONFIGURATION ---
+# 🚨 ध्यान दें: नीचे वाले "YOUR_GEMINI_API_KEY" को हटाकर अपनी असली API Key
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])")
 
 # --- 1. SYSTEM INITIALIZATION ---
