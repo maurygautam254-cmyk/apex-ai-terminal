@@ -11,7 +11,7 @@ import google.generativeai as genai
 
 # --- GEMINI API CONFIGURATION (दिमाग की चाबी) ---
 # 🚨 ध्यान दें: नीचे वाले "YOUR_GEMINI_API_KEY" को हटाकर अपनी असली API Key
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])")
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # --- 1. SYSTEM INITIALIZATION ---
 st.set_page_config(page_title="APEX AI", page_icon="🌍", layout="wide", initial_sidebar_state="expanded")
